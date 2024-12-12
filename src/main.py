@@ -4,6 +4,7 @@ import logging
 import time
 import numpy as np
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 import torch
 import torchvision.transforms as transforms
@@ -82,15 +83,15 @@ def main(data_dir,
     if use_all_data_to_train:
         train_loader = DataLoader(dataset=ConcatDataset([train_data, val_data, test_data]),
                                   batch_size=batch_size,
-                                  shuffle=True, pin_memory=True)
+                                  shuffle=True)
         logging.warning('Training with all the data (train, val and test).')
     else:
         train_loader = DataLoader(dataset=train_data,
                                   batch_size=batch_size,
-                                  shuffle=True, pin_memory=True)
+                                  shuffle=True)
         val_loader = DataLoader(dataset=val_data,
                                 batch_size=batch_size,
-                                shuffle=False, pin_memory=True)
+                                shuffle=False)
     model = torch_model(input_shape=input_shape,
                         num_classes=len(original_train_data[0].classes)).to(device)
 
@@ -107,11 +108,12 @@ def main(data_dir,
 
 
     # Train the model
+    t = tqdm(train_loader)
     for epoch in range(num_epochs):
         logging.info('#' * 50)
         logging.info('Epoch [{}/{}]'.format(epoch + 1, num_epochs))
 
-        train_score, train_loss = train_fn(model, optimizer, train_criterion, train_loader, device)
+        train_score, train_loss = train_fn(model, optimizer, train_criterion, t, device)
         scheduler.step()
         logging.info('Train accuracy: %f', train_score)
 
@@ -152,7 +154,7 @@ if __name__ == '__main__':
     cmdline_parser = argparse.ArgumentParser('DL WS24/25 Competition')
 
     cmdline_parser.add_argument('-m', '--model',
-                                default='SampleModel',
+                                default='HomemadeModel',
                                 help='Class name of model to train',
                                 type=str)
     cmdline_parser.add_argument('-e', '--epochs',

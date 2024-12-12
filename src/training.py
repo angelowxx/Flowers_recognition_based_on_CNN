@@ -4,7 +4,7 @@ import time
 from src.eval.evaluate import AverageMeter, accuracy
 
 
-def train_fn(model, optimizer, criterion, loader, device):
+def train_fn(model, optimizer, criterion, t, device):
     """
   Training method
   :param model: model to train
@@ -20,7 +20,7 @@ def train_fn(model, optimizer, criterion, loader, device):
     model.train()
     time_train = 0
 
-    t = tqdm(loader)
+
     for images, labels in t:
         images = images.to(device)
         labels = labels.to(device)
