@@ -27,8 +27,7 @@ class AverageMeter(object):
 
 def accuracy(logits, labels):
     preds = torch.argmax(logits, dim=1)
-    ground_truth = torch.argmax(labels, dim=1)
-    return torch.true_divide(torch.sum(preds == ground_truth), len(labels))
+    return torch.true_divide(torch.sum(preds == labels), len(labels))
 
 
 def eval_fn(model, loader, device):

@@ -16,7 +16,6 @@ from src.cnn import *
 from src.eval.evaluate import eval_fn, accuracy
 from src.training import train_fn
 from src.data_augmentations import *
-from src.utils import OneHotImageFolder
 
 
 def main(data_dir,
@@ -63,14 +62,14 @@ def main(data_dir,
     affine_transform = translation_rotation
 
     # Load the dataset
-    original_train_data = [OneHotImageFolder(os.path.join(data_dir, 'train'), transform=base_transform)]
+    original_train_data = [ImageFolder(os.path.join(data_dir, 'train'), transform=base_transform)]
     # augmented_train_data1 = [ImageFolder(os.path.join(data_dir, 'train'), transform=affine_transform) for i in range(5)]
-    augmented_train_data = [OneHotImageFolder(os.path.join(data_dir, 'train'), transform=data_augmentations) for i in range(augmentation_times)]
+    augmented_train_data = [ImageFolder(os.path.join(data_dir, 'train'), transform=data_augmentations) for i in range(augmentation_times)]
     train_data = ConcatDataset(original_train_data + augmented_train_data)
     # train_data = original_train_data
 
-    val_data = OneHotImageFolder(os.path.join(data_dir, 'val'), transform=base_transform)
-    test_data = OneHotImageFolder(os.path.join(data_dir, 'test'), transform=base_transform)
+    val_data = ImageFolder(os.path.join(data_dir, 'val'), transform=base_transform)
+    test_data = ImageFolder(os.path.join(data_dir, 'test'), transform=base_transform)
 
     channels, img_height, img_width = train_data[0][0].shape
 
@@ -94,7 +93,7 @@ def main(data_dir,
                                 batch_size=batch_size,
                                 shuffle=False)
     model = torch_model(input_shape=input_shape,
-                        num_classes=original_train_data[0].num_classes).to(device)
+                        num_classes=len(original_train_data[0].classes)).to(device)
 
     # instantiate optimizer
     optimizer = model_optimizer(model.parameters(), lr=learning_rate)
