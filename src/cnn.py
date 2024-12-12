@@ -68,6 +68,6 @@ class HomemadeModel(nn.Module):
         x = self.dropout(x)
         x = F.relu(x)
         x = self.fc2(x)
-        x = F.sigmoid(x)
+        x = F.softmax(x)
 
         return x
