@@ -47,7 +47,7 @@ class HomemadeModel(nn.Module):
         self.fc2 = nn.Linear(in_features=64, out_features=num_classes)
 
         self.dropout = nn.Dropout(p=0.2)
-        self.dropout2d = nn.Dropout2d(p=0.2)
+        self.dropout2d = nn.Dropout2d(p=0.5)
 
     def forward(self, x):
         x = self.conv1(x)
