@@ -38,12 +38,12 @@ class HomemadeModel(nn.Module):
         super(HomemadeModel, self).__init__()
         self.conv1 = nn.Conv2d(in_channels=input_shape[0], out_channels=10, kernel_size=(3, 3), padding=(1, 1))
         self.conv2 = nn.Conv2d(in_channels=10, out_channels=40, kernel_size=(3, 3), padding=(1, 1))
-        self.conv3 = nn.Conv2d(in_channels=40, out_channels=80, kernel_size=(3, 3), padding=(1, 1))
-        self.conv4 = nn.Conv2d(in_channels=80, out_channels=30, kernel_size=(3, 3), padding=(1, 1))
+        self.conv3 = nn.Conv2d(in_channels=40, out_channels=40, kernel_size=(3, 3), padding=(1, 1))
+        self.conv4 = nn.Conv2d(in_channels=40, out_channels=80, kernel_size=(3, 3), padding=(1, 1))
         self.pool = nn.MaxPool2d(3, stride=2)
         # The input features for the linear layer depends on the size of the input to the convolutional layer
         # So if you resize your image in data augmentations, you'll have to tweak this too.
-        self.fc1 = nn.Linear(in_features=270, out_features=64)
+        self.fc1 = nn.Linear(in_features=720, out_features=64)
         self.fc2 = nn.Linear(in_features=64, out_features=num_classes)
 
         self.dropout = nn.Dropout(p=0.5)
