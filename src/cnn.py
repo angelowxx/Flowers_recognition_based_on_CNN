@@ -68,6 +68,5 @@ class HomemadeModel(nn.Module):
         x = self.dropout(x)
         x = F.leaky_relu(x)
         x = self.fc2(x)
-        x = self.dropout(x)
 
         return x
