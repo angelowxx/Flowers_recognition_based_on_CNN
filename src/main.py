@@ -3,6 +3,7 @@ import argparse
 import logging
 import time
 import numpy as np
+import matplotlib.pyplot as plt
 
 import torch
 import torchvision.transforms as transforms
@@ -19,7 +20,7 @@ from src.data_augmentations import *
 def main(data_dir,
          torch_model,
          num_epochs=10,
-         batch_size=50,
+         batch_size=128,
          learning_rate=0.001,
          train_criterion=torch.nn.CrossEntropyLoss,
          model_optimizer=torch.optim.Adam,
@@ -48,19 +49,21 @@ def main(data_dir,
     # Device configuration
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-    """if data_augmentations is None:
+    if data_augmentations is None:
         data_augmentations = transforms.ToTensor()
     elif isinstance(data_augmentations, list):
         data_augmentations = transforms.Compose(data_augmentations)
     elif not isinstance(data_augmentations, transforms.Compose):
-        raise NotImplementedError"""
-    base_transform = transforms.Compose(resize_to_64x64)
-    affine_transform = transforms.Compose(translation_rotation)
+        raise NotImplementedError
+    base_transform = resize_to_64x64
+    affine_transform = translation_rotation
 
     # Load the dataset
-    original_train_data = ImageFolder(os.path.join(data_dir, 'train'), transform=base_transform)
-    augmented_train_data = ImageFolder(os.path.join(data_dir, 'train'), transform=affine_transform)
-    train_data = ConcatDataset([original_train_data, augmented_train_data])
+    original_train_data = [ImageFolder(os.path.join(data_dir, 'train'), transform=base_transform)]
+    # augmented_train_data1 = [ImageFolder(os.path.join(data_dir, 'train'), transform=affine_transform) for i in range(5)]
+    augmented_train_data = [ImageFolder(os.path.join(data_dir, 'train'), transform=data_augmentations) for i in range(10)]
+    train_data = ConcatDataset(original_train_data + augmented_train_data)
+    # train_data = original_train_data
 
     val_data = ImageFolder(os.path.join(data_dir, 'val'), transform=base_transform)
     test_data = ImageFolder(os.path.join(data_dir, 'test'), transform=base_transform)
@@ -88,10 +91,12 @@ def main(data_dir,
                                 shuffle=False)
 
     model = torch_model(input_shape=input_shape,
-                        num_classes=len(train_data.classes)).to(device)
+                        num_classes=len(original_train_data[0].classes)).to(device)
 
     # instantiate optimizer
     optimizer = model_optimizer(model.parameters(), lr=learning_rate)
+
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=2)
 
     # Info about the model being trained
     # You can find the number of learnable parameters in the model here
@@ -99,12 +104,14 @@ def main(data_dir,
     summary(model, input_shape,
             device='cuda' if torch.cuda.is_available() else 'cpu')
 
+
     # Train the model
     for epoch in range(num_epochs):
         logging.info('#' * 50)
         logging.info('Epoch [{}/{}]'.format(epoch + 1, num_epochs))
 
         train_score, train_loss = train_fn(model, optimizer, train_criterion, train_loader, device)
+        scheduler.step()
         logging.info('Train accuracy: %f', train_score)
 
         if not use_all_data_to_train:
@@ -126,6 +133,10 @@ def main(data_dir,
         logging.info('Accuracy at each epoch: ' + str(score))
         logging.info('Mean of accuracies across all epochs: ' + str(100*np.mean(score))+'%')
         logging.info('Accuracy of model at final epoch: ' + str(100*score[-1])+'%')
+
+        plt.plot(score)
+        plt.show()
+
 
 
 if __name__ == '__main__':
@@ -156,7 +167,7 @@ if __name__ == '__main__':
                                                      '..', 'dataset'),
                                 help='Directory in which the data is stored (can be downloaded)')
     cmdline_parser.add_argument('-l', '--learning_rate',
-                                default=0.01,
+                                default=0.005,
                                 help='Optimizer learning rate',
                                 type=float)
     cmdline_parser.add_argument('-L', '--training_loss',
@@ -182,9 +193,10 @@ if __name__ == '__main__':
                                 help='Name of this experiment',
                                 type=str)
     cmdline_parser.add_argument('-d', '--data-augmentation',
-                                default='resize_and_colour_jitter',
+                                default='data_augmentation_pipline',
                                 help='Data augmentation to apply to data before passing to the model.'
-                                     + 'Must be available in data_augmentations.py')
+                                     + 'Must be available in data_augmentations.py',
+                                nargs='+')
     cmdline_parser.add_argument('-a', '--use-all-data-to-train',
                                 action='store_true',
                                 help='Uses the train, validation, and test data to train the model if enabled.')

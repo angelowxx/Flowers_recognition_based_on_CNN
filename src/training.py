@@ -9,7 +9,7 @@ def train_fn(model, optimizer, criterion, loader, device):
   Training method
   :param model: model to train
   :param optimizer: optimization algorithm
-  :criterion: loss function
+  :param criterion: loss function
   :param loader: data loader for either training or testing set
   :param device: torch device
   :return: (accuracy, loss) on the data
