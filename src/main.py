@@ -117,6 +117,7 @@ def main(data_dir,
 
         save_model_str = os.path.join(model_save_dir, exp_name + '_model_' + str(int(time.time())))
     min_loss = 100
+    hightest_score = 0
     for epoch in range(num_epochs):
         logging.info('#' * 50)
         logging.info('Epoch [{}/{}]'.format(epoch + 1, num_epochs))
@@ -124,7 +125,7 @@ def main(data_dir,
         train_score, train_loss = train_fn(model, optimizer, train_criterion, train_loader, device)
         scheduler.step()
         logging.info('Train accuracy: %f', train_score)
-        if min_loss > train_loss:
+        if use_all_data_to_train and min_loss > train_loss:
             min_loss = train_loss
             torch.save(model.state_dict(), save_model_str)
 
@@ -132,6 +133,9 @@ def main(data_dir,
             test_score = eval_fn(model, val_loader, device)
             logging.info('Validation accuracy: %f', test_score)
             score.append(test_score)
+            if hightest_score < test_score:
+                hightest_score = test_score
+                torch.save(model.state_dict(), save_model_str)
 
 
 
