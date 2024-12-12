@@ -108,19 +108,6 @@ def main(data_dir,
 
 
     # Train the model
-    for epoch in range(num_epochs):
-        logging.info('#' * 50)
-        logging.info('Epoch [{}/{}]'.format(epoch + 1, num_epochs))
-
-        train_score, train_loss = train_fn(model, optimizer, train_criterion, train_loader, device)
-        scheduler.step()
-        logging.info('Train accuracy: %f', train_score)
-
-        if not use_all_data_to_train:
-            test_score = eval_fn(model, val_loader, device)
-            logging.info('Validation accuracy: %f', test_score)
-            score.append(test_score)
-
     if save_model_str:
         # Save the model checkpoint can be restored via "model = torch.load(save_model_str)"
         model_save_dir = os.path.join(os.getcwd(), save_model_str)
@@ -129,7 +116,24 @@ def main(data_dir,
             os.mkdir(model_save_dir)
 
         save_model_str = os.path.join(model_save_dir, exp_name + '_model_' + str(int(time.time())))
-        torch.save(model.state_dict(), save_model_str)
+    min_loss = 100
+    for epoch in range(num_epochs):
+        logging.info('#' * 50)
+        logging.info('Epoch [{}/{}]'.format(epoch + 1, num_epochs))
+
+        train_score, train_loss = train_fn(model, optimizer, train_criterion, train_loader, device)
+        scheduler.step()
+        logging.info('Train accuracy: %f', train_score)
+        if min_loss > train_loss:
+            min_loss = train_loss
+            torch.save(model.state_dict(), save_model_str)
+
+        if not use_all_data_to_train:
+            test_score = eval_fn(model, val_loader, device)
+            logging.info('Validation accuracy: %f', test_score)
+            score.append(test_score)
+
+
 
     if not use_all_data_to_train:
         logging.info('Accuracy at each epoch: ' + str(score))
