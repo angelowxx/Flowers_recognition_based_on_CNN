@@ -22,6 +22,7 @@ def main(data_dir,
          num_epochs=10,
          batch_size=128,
          learning_rate=0.001,
+         augmentation_times=5,
          train_criterion=torch.nn.CrossEntropyLoss,
          model_optimizer=torch.optim.Adam,
          data_augmentations=None,
@@ -62,7 +63,7 @@ def main(data_dir,
     # Load the dataset
     original_train_data = [ImageFolder(os.path.join(data_dir, 'train'), transform=base_transform)]
     # augmented_train_data1 = [ImageFolder(os.path.join(data_dir, 'train'), transform=affine_transform) for i in range(5)]
-    augmented_train_data = [ImageFolder(os.path.join(data_dir, 'train'), transform=data_augmentations) for i in range(10)]
+    augmented_train_data = [ImageFolder(os.path.join(data_dir, 'train'), transform=data_augmentations) for i in range(augmentation_times)]
     train_data = ConcatDataset(original_train_data + augmented_train_data)
     # train_data = original_train_data
 
@@ -200,6 +201,10 @@ if __name__ == '__main__':
     cmdline_parser.add_argument('-a', '--use-all-data-to-train',
                                 action='store_true',
                                 help='Uses the train, validation, and test data to train the model if enabled.')
+    cmdline_parser.add_argument('-t', '--augmentation_times',
+                                default=5,
+                                help='Augmentation times',
+                                type=int)
 
     args, unknowns = cmdline_parser.parse_known_args()
     log_lvl = logging.INFO if args.verbose == 'INFO' else logging.DEBUG
