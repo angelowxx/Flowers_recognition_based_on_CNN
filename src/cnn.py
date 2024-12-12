@@ -43,8 +43,8 @@ class HomemadeModel(nn.Module):
         self.pool = nn.MaxPool2d(3, stride=2)
         # The input features for the linear layer depends on the size of the input to the convolutional layer
         # So if you resize your image in data augmentations, you'll have to tweak this too.
-        self.fc1 = nn.Linear(in_features=270, out_features=128)
-        self.fc2 = nn.Linear(in_features=128, out_features=num_classes)
+        self.fc1 = nn.Linear(in_features=270, out_features=64)
+        self.fc2 = nn.Linear(in_features=64, out_features=num_classes)
 
         self.dropout = nn.Dropout(p=0.5)
         self.dropout2d = nn.Dropout2d(p=0.2)

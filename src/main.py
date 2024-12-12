@@ -108,12 +108,11 @@ def main(data_dir,
 
 
     # Train the model
-    t = tqdm(train_loader)
     for epoch in range(num_epochs):
         logging.info('#' * 50)
         logging.info('Epoch [{}/{}]'.format(epoch + 1, num_epochs))
 
-        train_score, train_loss = train_fn(model, optimizer, train_criterion, t, device)
+        train_score, train_loss = train_fn(model, optimizer, train_criterion, train_loader, device)
         scheduler.step()
         logging.info('Train accuracy: %f', train_score)
 
