@@ -48,6 +48,7 @@ def main(data_dir,
 
     # Device configuration
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    logging.info(f"Using device: {device}")
 
     if data_augmentations is None:
         data_augmentations = transforms.ToTensor()
