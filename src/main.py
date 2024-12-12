@@ -48,17 +48,22 @@ def main(data_dir,
     # Device configuration
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-    if data_augmentations is None:
+    """if data_augmentations is None:
         data_augmentations = transforms.ToTensor()
     elif isinstance(data_augmentations, list):
         data_augmentations = transforms.Compose(data_augmentations)
     elif not isinstance(data_augmentations, transforms.Compose):
-        raise NotImplementedError
+        raise NotImplementedError"""
+    base_transform = transforms.Compose(resize_to_64x64)
+    affine_transform = transforms.Compose(translation_rotation)
 
     # Load the dataset
-    train_data = ImageFolder(os.path.join(data_dir, 'train'), transform=data_augmentations)
-    val_data = ImageFolder(os.path.join(data_dir, 'val'), transform=data_augmentations)
-    test_data = ImageFolder(os.path.join(data_dir, 'test'), transform=data_augmentations)
+    original_train_data = ImageFolder(os.path.join(data_dir, 'train'), transform=base_transform)
+    augmented_train_data = ImageFolder(os.path.join(data_dir, 'train'), transform=affine_transform)
+    train_data = ConcatDataset([original_train_data, augmented_train_data])
+
+    val_data = ImageFolder(os.path.join(data_dir, 'val'), transform=base_transform)
+    test_data = ImageFolder(os.path.join(data_dir, 'test'), transform=base_transform)
 
     channels, img_height, img_width = train_data[0][0].shape
 
