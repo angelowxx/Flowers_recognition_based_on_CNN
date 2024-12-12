@@ -82,15 +82,15 @@ def main(data_dir,
     if use_all_data_to_train:
         train_loader = DataLoader(dataset=ConcatDataset([train_data, val_data, test_data]),
                                   batch_size=batch_size,
-                                  shuffle=True, num_workers=4)
+                                  shuffle=True, pin_memory=True)
         logging.warning('Training with all the data (train, val and test).')
     else:
         train_loader = DataLoader(dataset=train_data,
                                   batch_size=batch_size,
-                                  shuffle=True, num_workers=4)
+                                  shuffle=True, pin_memory=True)
         val_loader = DataLoader(dataset=val_data,
                                 batch_size=batch_size,
-                                shuffle=False, num_workers=4)
+                                shuffle=False, pin_memory=True)
     model = torch_model(input_shape=input_shape,
                         num_classes=len(original_train_data[0].classes)).to(device)
 
