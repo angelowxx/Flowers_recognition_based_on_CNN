@@ -14,9 +14,9 @@ resize_and_colour_jitter = transforms.Compose([
 
 data_augmentation_pipline = transforms.Compose([
     transforms.Resize((128, 128)),
+    transforms.RandomAffine(degrees=(0, 90), translate=(0.2, 0.2), shear=20, scale=(0.5, 1)),  #
     transforms.RandomCrop(size=(64, 64)),
     transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.1),
-    transforms.RandomAffine(degrees=(-90, 90), translate=(0.2, 0.2), shear=20, scale=(0.8, 1.2)),  #
     transforms.RandomVerticalFlip(p=0.5),
     transforms.RandomHorizontalFlip(p=0.5),
     transforms.ToTensor()

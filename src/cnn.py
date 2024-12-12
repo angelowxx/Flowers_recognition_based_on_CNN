@@ -55,7 +55,7 @@ class HomemadeModel(nn.Module):
         # x = self.dropout2d(x)
         x = self.conv2(x)
         x = self.pool(x)
-        x = self.dropout2d(x)
+        # x = self.dropout2d(x)
         x = self.conv3(x)
         x = self.pool(x)
         # x = self.dropout2d(x)
