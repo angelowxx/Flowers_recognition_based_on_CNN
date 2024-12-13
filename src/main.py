@@ -147,7 +147,11 @@ def main(data_dir,
         plt.plot(score)
         plt.xlabel('epochs')
         plt.ylabel('score')
-        save_fig_dir = os.path.join('fig_' + str(int(time.time())) + ".png")
+        save_fig_dir = os.path.join(os.getcwd(), 'figures')
+
+        if not os.path.exists(save_fig_dir):
+            os.mkdir(save_fig_dir)
+        save_fig_dir = os.path.join(save_fig_dir, 'fig_' + str(int(time.time())) + ".png")
         plt.savefig(save_fig_dir)
 
 
