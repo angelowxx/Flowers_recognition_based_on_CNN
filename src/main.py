@@ -100,7 +100,7 @@ def main(data_dir,
 
     data_augmentations = [resize_and_colour_jitter, translation_rotation, cropping_img, data_augmentation_pipline]
     augmentation_times = [2, 2, 2, 3]
-    num_epochs = [20, 20, 20, 50]
+    num_epochs = [20, 20, 20, 100]
     learning_rates = [0.005, 0.005, 0.005, 0.005]
 
     augmentation_types = len(data_augmentations)
