@@ -145,7 +145,10 @@ def main(data_dir,
         logging.info('Accuracy of model at final epoch: ' + str(100*score[-1])+'%')
 
         plt.plot(score)
-        plt.show()
+        plt.xlabel('epochs')
+        plt.ylabel('score')
+        save_fig_dir = os.path.join('fig_' + str(int(time.time())) + ".png")
+        plt.savefig(save_fig_dir)
 
 
 
