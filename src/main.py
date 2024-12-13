@@ -98,7 +98,7 @@ def main(data_dir,
     # instantiate optimizer
     optimizer = model_optimizer(model.parameters(), lr=learning_rate)
 
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=2)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=20, T_mult=2)
 
     # Info about the model being trained
     # You can find the number of learnable parameters in the model here
