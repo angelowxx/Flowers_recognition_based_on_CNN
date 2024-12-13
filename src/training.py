@@ -13,7 +13,7 @@ def train_model(save_model_str, num_epochs, model, learning_rate
                 , train_criterion, train_loader, device, model_optimizer
                 , use_all_data_to_train, val_loader, exp_name, score, info):
     optimizer = model_optimizer(model.parameters(), lr=learning_rate)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=5, gamma=0.5)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=10, gamma=0.5)
     # Train the model
     if save_model_str:
         # Save the model checkpoint can be restored via "model = torch.load(save_model_str)"

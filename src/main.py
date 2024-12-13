@@ -94,7 +94,7 @@ def main(data_dir,
                             batch_size=batch_size,
                             shuffle=True)
 
-    train_model(save_model_str, 20, model, 0.005
+    train_model(save_model_str, 30, model, 0.005
                 , train_criterion, train_loader, device, model_optimizer
                 , use_all_data_to_train, val_loader, exp_name, score, 'initialization')
 
