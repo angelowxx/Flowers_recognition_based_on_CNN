@@ -16,7 +16,7 @@ data_augmentation_pipline = transforms.Compose([
     transforms.Resize((128, 128)),
     transforms.RandomAffine(degrees=(0, 90), translate=(0.2, 0.2), shear=20, scale=(0.8, 1.2)),  #
     transforms.RandomCrop(size=(64, 64)),
-    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
+    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
     transforms.RandomVerticalFlip(p=0.5),
     transforms.RandomHorizontalFlip(p=0.5),
     transforms.ToTensor()
