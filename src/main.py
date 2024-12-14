@@ -99,8 +99,8 @@ def main(data_dir,
                 , use_all_data_to_train, val_loader, exp_name, score, 'initialization')
 
     data_augmentations = [resize_and_colour_jitter, translation_rotation, cropping_img, data_augmentation_pipline]
-    augmentation_times = [2, 2, 2, 3]
-    num_epochs = [20, 20, 20, 100]
+    augmentation_times = [2, 2, 2, 5]
+    num_epochs = [30, 30, 30, 150]
     learning_rates = [0.005, 0.005, 0.005, 0.005]
 
     augmentation_types = len(data_augmentations)
