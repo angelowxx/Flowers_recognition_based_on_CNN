@@ -111,7 +111,7 @@ class HandmadeModel(nn.Module):
         self.dropout = nn.Dropout(p=0.2)
         self.dropout2d = nn.Dropout2d(p=0.2)
 
-        self.mode = -1
+        self.mode = 9
         self.layers = [self.conv1, self.conv2, self.conv3, self.conv4, self.conv5,
                        self.conv6, self.conv7, self.conv8, self.conv9, self.fc2]
 
