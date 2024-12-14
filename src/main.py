@@ -95,7 +95,7 @@ def main(data_dir,
     if continue_training:
         model.load_state_dict(torch.load(os.path.join(os.getcwd(), 'models', 'default_model')))
     else:
-        train_model(save_model_str, 25, model, 0.005
+        train_model(save_model_str, 30, model, 0.005
                     , train_criterion, train_loader, device, model_optimizer
                     , use_all_data_to_train, val_loader, exp_name, score, 'Pre-training')
 
