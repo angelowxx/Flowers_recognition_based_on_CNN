@@ -111,9 +111,9 @@ class HandmadeModel(nn.Module):
         self.dropout = nn.Dropout(p=0.2)
         self.dropout2d = nn.Dropout2d(p=0.2)
 
-        self.mode = 9
         self.layers = [self.conv1, self.conv2, self.conv3, self.conv4, self.conv5,
                        self.conv6, self.conv7, self.conv8, self.conv9, self.fc2]
+        self.mode = len(self.layers)-1
 
     def forward(self, x):
         x = self.conv1(x)
@@ -168,7 +168,7 @@ class HandmadeModel(nn.Module):
     def freeze_all_parameters(self):
         for param in self.parameters():
             param.requires_grad = False
-        self.mode = 9
+        self.mode = len(self.layers)-1
 
     def step(self):
         for param in self.layers[self.mode].parameters():
