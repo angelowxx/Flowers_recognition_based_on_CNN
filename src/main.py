@@ -95,14 +95,12 @@ def main(data_dir,
     if continue_training:
         model.load_state_dict(torch.load(os.path.join(os.getcwd(), 'models', 'default_model')))
     else:
-        train_model(save_model_str, 30, model, 0.005
+        train_model(save_model_str, 25, model, 0.005
                     , train_criterion, train_loader, device, model_optimizer
-                    , use_all_data_to_train, val_loader, exp_name, score, 'Pretraining')
+                    , use_all_data_to_train, val_loader, exp_name, score, 'Pre-training')
 
     data_augmentations = [translation_rotation, cropping_img, resize_and_colour_jitter, data_augmentation_pipline]
     augmentation_times = [2, 2, 2, 2]
-    num_epochs = [0, 0, 0, 30]
-    learning_rates = [0.005, 0.002, 0.002, 0.005]
 
     augmentation_types = len(data_augmentations)
     train_data = [train_data]
@@ -110,37 +108,24 @@ def main(data_dir,
     for i in range(augmentation_types):
         data_augmentation = data_augmentations[i]
         augmentation_time = augmentation_times[i]
-        info = 'Data augmentation [{}/{}]'.format(i + 1, augmentation_types)
         train_data = [ImageFolder(os.path.join(data_dir, 'train'), transform=data_augmentation) for i in
                       range(augmentation_time)] + train_data
-
-        train_loader = DataLoader(dataset=ConcatDataset(train_data),
-                                  batch_size=batch_size,
-                                  shuffle=True)
-        train_model(save_model_str, num_epochs[i], model, learning_rates[i]
-                    , train_criterion, train_loader, device, model_optimizer
-                    , use_all_data_to_train, val_loader, exp_name, score, info)
 
     train_loader = DataLoader(dataset=ConcatDataset(train_data),
                               batch_size=batch_size,
                               shuffle=True)
 
-    info = 'Fine tuning [1/3]'
-    learning_rate = 0.0003
-    model.freeze_convolution_layers()
-    train_model(save_model_str, 10, model, learning_rate
+    info = 'Post-training [1/2]'
+    learning_rate = 0.005
+    #model.freeze_convolution_layers()
+    train_model(save_model_str, 30, model, learning_rate
                 , train_criterion, train_loader, device, model_optimizer
                 , use_all_data_to_train, val_loader, exp_name, score, info)
-    info = 'Fine tuning [2/3]'
-    learning_rate = 0.00001
-    model.freeze_linear_layers()
-    train_model(save_model_str, 10, model, learning_rate
-                , train_criterion, train_loader, device, model_optimizer
-                , use_all_data_to_train, val_loader, exp_name, score, info)
-    learning_rate = 0.00001
-    info = 'Fine tuning [3/3]'
-    model.freeze_convolution_layers()
-    train_model(save_model_str, 10, model, learning_rate
+
+    info = 'Post-training [2/2]'
+    learning_rate = 0.005
+    #model.freeze_linear_layers()
+    train_model(save_model_str, 30, model, learning_rate
                 , train_criterion, train_loader, device, model_optimizer
                 , use_all_data_to_train, val_loader, exp_name, score, info)
 
