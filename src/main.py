@@ -103,6 +103,7 @@ def main(data_dir,
 
 
     num_loops = 3
+    learning_rate = 0.001
     for i in range(num_loops):
         info = 'Post-training [{}/{}]'.format(i+1, num_loops)
         train_data = [ImageFolder(os.path.join(data_dir, 'train'), transform=data_augmentation) for i in
@@ -110,11 +111,11 @@ def main(data_dir,
         train_loader = DataLoader(dataset=ConcatDataset(train_data),
                                   batch_size=batch_size,
                                   shuffle=True)
-        learning_rate = 0.001
         #model.freeze_linear_layers()
         train_model(save_model_str, 30, model, learning_rate
                     , train_criterion, train_loader, device, model_optimizer
                     , use_all_data_to_train, val_loader, exp_name, score, info)
+        learning_rate /= 2
 
     if not use_all_data_to_train:
         logging.info('Accuracy at each epoch: ' + str(score))
