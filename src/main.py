@@ -106,11 +106,11 @@ def main(data_dir,
     for i in range(num_loops):
         info = 'Post-training [{}/{}]'.format(i+1, num_loops)
         train_data = [ImageFolder(os.path.join(data_dir, 'train'), transform=data_augmentation) for i in
-                      range(5)]
+                      range(2)]
         train_loader = DataLoader(dataset=ConcatDataset(train_data),
                                   batch_size=batch_size,
                                   shuffle=True)
-        learning_rate = 0.005
+        learning_rate = 0.001
         #model.freeze_linear_layers()
         train_model(save_model_str, 30, model, learning_rate
                     , train_criterion, train_loader, device, model_optimizer
