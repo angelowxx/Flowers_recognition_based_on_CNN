@@ -100,7 +100,7 @@ def main(data_dir,
                     , use_all_data_to_train, val_loader, exp_name, score, 'Pre-training')
 
     data_augmentations = [translation_rotation, cropping_img, resize_and_colour_jitter, data_augmentation_pipline]
-    augmentation_times = [2, 2, 2, 1]
+    augmentation_times = [3, 2, 2, 1]
     num_epochs = [20, 20, 20, 30]
 
     augmentation_types = len(data_augmentations)
