@@ -168,7 +168,7 @@ class HandmadeModel(nn.Module):
     def freeze_all_parameters(self):
         for param in self.parameters():
             param.requires_grad = False
-        self.mode = -1
+        self.mode = 9
 
     def step(self):
         for param in self.layers[self.mode].parameters():
