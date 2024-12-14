@@ -29,9 +29,9 @@ cropping_img = transforms.Compose([
 
 data_augmentation_pipline = transforms.Compose([
     transforms.Resize((96, 96)),
-    transforms.RandomAffine(degrees=(0, 90), translate=(0.1, 0.2), shear=10, scale=(0.9, 1.1)),  #
+    transforms.RandomAffine(degrees=(0, 90), translate=(0.3, 0.3), shear=30, scale=(0.7, 1.3)),  #
     transforms.RandomCrop(size=(64, 64)),
-    transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1),
+    transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0.3),
     transforms.RandomVerticalFlip(p=0.5),
     transforms.RandomHorizontalFlip(p=0.5),
     transforms.ToTensor()

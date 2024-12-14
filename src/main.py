@@ -25,7 +25,8 @@ def main(data_dir,
          model_optimizer=torch.optim.Adam,
          save_model_str=None,
          use_all_data_to_train=False,
-         exp_name=''):
+         exp_name='',
+         continue_training=False):
     """
     Training loop for configurableNet.
     :param torch_model: model that we are training
@@ -82,8 +83,6 @@ def main(data_dir,
     model = torch_model(input_shape=input_shape,
                         num_classes=len(train_data.classes)).to(device)
 
-
-
     # Info about the model being trained
     # You can find the number of learnable parameters in the model here
     logging.info('Model being trained:')
@@ -91,50 +90,55 @@ def main(data_dir,
             device='cuda' if torch.cuda.is_available() else 'cpu')
 
     train_loader = DataLoader(dataset=train_data,
-                            batch_size=batch_size,
-                            shuffle=True)
+                              batch_size=batch_size,
+                              shuffle=True)
+    if continue_training:
+        model.load_state_dict(torch.load(os.path.join(os.getcwd(), 'models', 'default_model')))
+    else:
+        train_model(save_model_str, 30, model, 0.003
+                    , train_criterion, train_loader, device, model_optimizer
+                    , use_all_data_to_train, val_loader, exp_name, score, 'Pretraining')
 
-    train_model(save_model_str, 20, model, 0.005
-                , train_criterion, train_loader, device, model_optimizer
-                , use_all_data_to_train, val_loader, exp_name, score, 'Pretraining')
-
-    data_augmentations = [resize_and_colour_jitter, cropping_img, translation_rotation]
-    augmentation_times = [2, 2, 2]
-    num_epochs = [20, 20, 20]
-    learning_rates = [0.005, 0.005, 0.005]
+    data_augmentations = [cropping_img, translation_rotation, data_augmentation_pipline]
+    augmentation_times = [2, 2, 3]
+    num_epochs = [20, 20, 50]
+    learning_rates = [0.005, 0.002, 0.002]
 
     augmentation_types = len(data_augmentations)
+    train_data = [train_data]
+    # model.add_dropout()
     for i in range(augmentation_types):
         data_augmentation = data_augmentations[i]
         augmentation_time = augmentation_times[i]
         info = 'Data augmentation [{}/{}]'.format(i + 1, augmentation_types)
-        augmented_train_data = ConcatDataset([ImageFolder(os.path.join(data_dir, 'train'), transform=data_augmentation) for i in
-                                range(augmentation_time)] + [train_data])
+        train_data = [ImageFolder(os.path.join(data_dir, 'train'), transform=data_augmentation) for i in
+                      range(augmentation_time)] + train_data
 
-        train_loader = DataLoader(dataset=augmented_train_data,
-                                batch_size=batch_size,
-                                shuffle=True)
-
+        train_loader = DataLoader(dataset=ConcatDataset(train_data),
+                                  batch_size=batch_size,
+                                  shuffle=True)
         train_model(save_model_str, num_epochs[i], model, learning_rates[i]
                     , train_criterion, train_loader, device, model_optimizer
                     , use_all_data_to_train, val_loader, exp_name, score, info)
 
-    data_augmentation = data_augmentation_pipline
-    augmentation_time = 5
-    augmented_train_data = ConcatDataset(
-        [ImageFolder(os.path.join(data_dir, 'train'), transform=data_augmentation) for i in
-         range(augmentation_time)] + [train_data])
-
-    train_loader = DataLoader(dataset=augmented_train_data,
+    train_loader = DataLoader(dataset=ConcatDataset(train_data),
                               batch_size=batch_size,
                               shuffle=True)
-    learning_rate = 0.001
-    info = 'Fine tuning [1/2]'
+
+    info = 'Fine tuning [1/3]'
+    learning_rate = 0.00001
+    model.freeze_convolution_layers()
+    train_model(save_model_str, 20, model, learning_rate
+                , train_criterion, train_loader, device, model_optimizer
+                , use_all_data_to_train, val_loader, exp_name, score, info)
+    info = 'Fine tuning [2/3]'
+    learning_rate = 0.00001
     model.freeze_linear_layers()
     train_model(save_model_str, 20, model, learning_rate
                 , train_criterion, train_loader, device, model_optimizer
                 , use_all_data_to_train, val_loader, exp_name, score, info)
-    info = 'Fine tuning [2/2]'
+    learning_rate = 0.00001
+    info = 'Fine tuning [3/3]'
     model.freeze_convolution_layers()
     train_model(save_model_str, 20, model, learning_rate
                 , train_criterion, train_loader, device, model_optimizer
@@ -142,8 +146,8 @@ def main(data_dir,
 
     if not use_all_data_to_train:
         logging.info('Accuracy at each epoch: ' + str(score))
-        logging.info('Mean of accuracies across all epochs: ' + str(100*np.mean(score))+'%')
-        logging.info('Accuracy of model at final epoch: ' + str(100*score[-1])+'%')
+        logging.info('Mean of accuracies across all epochs: ' + str(100 * np.mean(score)) + '%')
+        logging.info('Accuracy of model at final epoch: ' + str(100 * score[-1]) + '%')
 
         plt.plot(score)
         plt.xlabel('epochs')
@@ -154,7 +158,6 @@ def main(data_dir,
             os.mkdir(save_fig_dir)
         save_fig_dir = os.path.join(save_fig_dir, 'fig_score' + ".png")
         plt.savefig(save_fig_dir)
-
 
 
 if __name__ == '__main__':
@@ -169,7 +172,7 @@ if __name__ == '__main__':
     cmdline_parser = argparse.ArgumentParser('DL WS24/25 Competition')
 
     cmdline_parser.add_argument('-m', '--model',
-                                default='HomemadeModel',
+                                default='HandmadeModel',
                                 help='Class name of model to train',
                                 type=str)
     cmdline_parser.add_argument('-b', '--batch_size',
@@ -205,6 +208,9 @@ if __name__ == '__main__':
     cmdline_parser.add_argument('-a', '--use-all-data-to-train',
                                 action='store_true',
                                 help='Uses the train, validation, and test data to train the model if enabled.')
+    cmdline_parser.add_argument('-c', '--continue_training',
+                                action='store_true',
+                                help='continue training the existing model.')
 
     args, unknowns = cmdline_parser.parse_known_args()
     log_lvl = logging.INFO if args.verbose == 'INFO' else logging.DEBUG
@@ -223,5 +229,6 @@ if __name__ == '__main__':
         model_optimizer=opti_dict[args.optimizer],
         save_model_str=args.model_path,
         exp_name=args.exp_name,
-        use_all_data_to_train=args.use_all_data_to_train
+        use_all_data_to_train=args.use_all_data_to_train,
+        continue_training=args.continue_training
     )
