@@ -117,15 +117,14 @@ def main(data_dir,
 
     info = 'Post-training [1/2]'
     learning_rate = 0.005
-    #model.freeze_convolution_layers()
     train_model(save_model_str, 30, model, learning_rate
                 , train_criterion, train_loader, device, model_optimizer
                 , use_all_data_to_train, val_loader, exp_name, score, info)
 
     info = 'Post-training [2/2]'
     learning_rate = 0.005
-    #model.freeze_linear_layers()
-    train_model(save_model_str, 30, model, learning_rate
+    model.freeze_convolution_layers()
+    train_model(save_model_str, 20, model, learning_rate
                 , train_criterion, train_loader, device, model_optimizer
                 , use_all_data_to_train, val_loader, exp_name, score, info)
 

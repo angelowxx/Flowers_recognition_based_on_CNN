@@ -90,11 +90,11 @@ class HomemadeModel(nn.Module):
 class HandmadeModel(nn.Module):
     def __init__(self, input_shape=(3, 64, 64), num_classes=17):
         super(HandmadeModel, self).__init__()
-        self.conv1 = nn.Conv2d(in_channels=input_shape[0], out_channels=10, kernel_size=(3, 3), padding=(1, 1))
+        self.conv1 = nn.Conv2d(in_channels=input_shape[0], out_channels=20, kernel_size=(3, 3), padding=(1, 1))
 
-        self.conv2 = nn.Conv2d(in_channels=10, out_channels=10, kernel_size=(3, 3), padding=(1, 1))
-        self.conv3 = nn.Conv2d(in_channels=10, out_channels=10, kernel_size=(5, 5), padding=(2, 2))
-        self.conv4 = nn.Conv2d(in_channels=10, out_channels=10, kernel_size=(7, 7), padding=(3, 3))
+        self.conv2 = nn.Conv2d(in_channels=20, out_channels=10, kernel_size=(3, 3), padding=(1, 1))
+        self.conv3 = nn.Conv2d(in_channels=20, out_channels=10, kernel_size=(5, 5), padding=(2, 2))
+        self.conv4 = nn.Conv2d(in_channels=20, out_channels=10, kernel_size=(7, 7), padding=(3, 3))
 
         self.conv5 = nn.Conv2d(in_channels=30, out_channels=60, kernel_size=(3, 3), padding=(1, 1))
         self.conv6 = nn.Conv2d(in_channels=60, out_channels=60, kernel_size=(3, 3), padding=(1, 1))
