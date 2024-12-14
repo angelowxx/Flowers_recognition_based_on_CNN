@@ -102,6 +102,7 @@ def main(data_dir,
     data_augmentations = [translation_rotation, cropping_img, resize_and_colour_jitter, data_augmentation_pipline]
     augmentation_times = [3, 2, 2, 1]
     num_epochs = [20, 20, 20, 30]
+    learning_rates = [0.005, 0.005, 0.005, 0.008]
 
     augmentation_types = len(data_augmentations)
     train_data = [train_data]
@@ -110,6 +111,7 @@ def main(data_dir,
         data_augmentation = data_augmentations[i]
         augmentation_time = augmentation_times[i]
         num_epoch = num_epochs[i]
+        learning_rate = learning_rates[i]
         train_data = [ImageFolder(os.path.join(data_dir, 'train'), transform=data_augmentation) for i in
                       range(augmentation_time)] + train_data
 
@@ -118,7 +120,7 @@ def main(data_dir,
                                   shuffle=True)
 
         info = 'Training [{}/{}]'.format(i+1, augmentation_types)
-        learning_rate = 0.005
+
         train_model(save_model_str, num_epoch, model, learning_rate
                     , train_criterion, train_loader, device, model_optimizer
                     , use_all_data_to_train, val_loader, exp_name, score, info)
