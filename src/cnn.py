@@ -70,3 +70,19 @@ class HomemadeModel(nn.Module):
         x = self.fc2(x)
 
         return x
+
+    def freeze_convolution_layers(self):
+        for param in self.parameters():
+            param.requires_grad = False
+        for param in self.fc2.parameters():
+            param.requires_grad = True
+        for param in self.fc1.parameters():
+            param.requires_grad = True
+
+    def freeze_linear_layers(self):
+        for param in self.parameters():
+            param.requires_grad = True
+        for param in self.fc2.parameters():
+            param.requires_grad = False
+        for param in self.fc1.parameters():
+            param.requires_grad = False

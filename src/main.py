@@ -96,12 +96,12 @@ def main(data_dir,
 
     train_model(save_model_str, 20, model, 0.005
                 , train_criterion, train_loader, device, model_optimizer
-                , use_all_data_to_train, val_loader, exp_name, score, 'initialization')
+                , use_all_data_to_train, val_loader, exp_name, score, 'Pretraining')
 
-    data_augmentations = [resize_and_colour_jitter, translation_rotation, cropping_img, data_augmentation_pipline]
-    augmentation_times = [2, 2, 2, 3]
-    num_epochs = [20, 20, 20, 50]
-    learning_rates = [0.005, 0.005, 0.005, 0.005]
+    data_augmentations = [resize_and_colour_jitter, cropping_img, translation_rotation]
+    augmentation_times = [2, 2, 2]
+    num_epochs = [20, 20, 20]
+    learning_rates = [0.005, 0.005, 0.005]
 
     augmentation_types = len(data_augmentations)
     for i in range(augmentation_types):
@@ -118,6 +118,27 @@ def main(data_dir,
         train_model(save_model_str, num_epochs[i], model, learning_rates[i]
                     , train_criterion, train_loader, device, model_optimizer
                     , use_all_data_to_train, val_loader, exp_name, score, info)
+
+    data_augmentation = data_augmentation_pipline
+    augmentation_time = 5
+    augmented_train_data = ConcatDataset(
+        [ImageFolder(os.path.join(data_dir, 'train'), transform=data_augmentation) for i in
+         range(augmentation_time)] + [train_data])
+
+    train_loader = DataLoader(dataset=augmented_train_data,
+                              batch_size=batch_size,
+                              shuffle=True)
+    learning_rate = 0.001
+    info = 'Fine tuning [1/2]'
+    model.freeze_linear_layers()
+    train_model(save_model_str, 20, model, learning_rate
+                , train_criterion, train_loader, device, model_optimizer
+                , use_all_data_to_train, val_loader, exp_name, score, info)
+    info = 'Fine tuning [2/2]'
+    model.freeze_convolution_layers()
+    train_model(save_model_str, 20, model, learning_rate
+                , train_criterion, train_loader, device, model_optimizer
+                , use_all_data_to_train, val_loader, exp_name, score, info)
 
     if not use_all_data_to_train:
         logging.info('Accuracy at each epoch: ' + str(score))
