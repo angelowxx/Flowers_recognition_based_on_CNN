@@ -129,7 +129,7 @@ def main(data_dir,
     for i in range(20):
         info = 'Training single layer [{}/{}]'.format(i+1, 10)
         model.step()
-        learning_rate = 0.0003
+        learning_rate = 0.0001
         train_model(save_model_str, 6, model, learning_rate
                     , train_criterion, train_loader, device, model_optimizer
                     , use_all_data_to_train, val_loader, exp_name, score, info)
