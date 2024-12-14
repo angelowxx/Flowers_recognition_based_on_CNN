@@ -22,13 +22,13 @@ translation_rotation = transforms.Compose([
 ])
 
 cropping_img = transforms.Compose([
-    transforms.Resize((128, 128)),
+    transforms.Resize((96, 96)),
     transforms.RandomCrop(size=(64, 64)),
     transforms.ToTensor()
 ])
 
 data_augmentation_pipline = transforms.Compose([
-    transforms.Resize((128, 128)),
+    transforms.Resize((96, 96)),
     transforms.RandomAffine(degrees=(0, 90), translate=(0.1, 0.2), shear=10, scale=(0.9, 1.1)),  #
     transforms.RandomCrop(size=(64, 64)),
     transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1),
