@@ -12,7 +12,7 @@ from src.eval.evaluate import AverageMeter, accuracy, eval_fn
 def train_model(save_model_str, num_epochs, model, learning_rate
                 , train_criterion, train_loader, device, model_optimizer
                 , use_all_data_to_train, val_loader, exp_name, score, info):
-    optimizer = model_optimizer(model.parameters(), lr=learning_rate)
+    optimizer = model_optimizer(model.parameters(), lr=learning_rate).to(device)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=8, gamma=0.5)
     # Train the model
     if save_model_str:

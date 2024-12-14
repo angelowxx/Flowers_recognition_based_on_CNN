@@ -95,14 +95,14 @@ def main(data_dir,
     if continue_training:
         model.load_state_dict(torch.load(os.path.join(os.getcwd(), 'models', 'default_model')))
     else:
-        train_model(save_model_str, 30, model, 0.003
+        train_model(save_model_str, 30, model, 0.005
                     , train_criterion, train_loader, device, model_optimizer
                     , use_all_data_to_train, val_loader, exp_name, score, 'Pretraining')
 
-    data_augmentations = [cropping_img, translation_rotation, data_augmentation_pipline]
-    augmentation_times = [2, 2, 2]
-    num_epochs = [20, 20, 50]
-    learning_rates = [0.005, 0.002, 0.002]
+    data_augmentations = [translation_rotation, cropping_img, resize_and_colour_jitter, data_augmentation_pipline]
+    augmentation_times = [2, 2, 2, 2]
+    num_epochs = [0, 0, 0, 30]
+    learning_rates = [0.005, 0.002, 0.002, 0.005]
 
     augmentation_types = len(data_augmentations)
     train_data = [train_data]
@@ -126,21 +126,21 @@ def main(data_dir,
                               shuffle=True)
 
     info = 'Fine tuning [1/3]'
-    learning_rate = 0.0005
+    learning_rate = 0.0003
     model.freeze_convolution_layers()
-    train_model(save_model_str, 20, model, learning_rate
+    train_model(save_model_str, 10, model, learning_rate
                 , train_criterion, train_loader, device, model_optimizer
                 , use_all_data_to_train, val_loader, exp_name, score, info)
     info = 'Fine tuning [2/3]'
     learning_rate = 0.00001
     model.freeze_linear_layers()
-    train_model(save_model_str, 20, model, learning_rate
+    train_model(save_model_str, 10, model, learning_rate
                 , train_criterion, train_loader, device, model_optimizer
                 , use_all_data_to_train, val_loader, exp_name, score, info)
     learning_rate = 0.00001
     info = 'Fine tuning [3/3]'
     model.freeze_convolution_layers()
-    train_model(save_model_str, 20, model, learning_rate
+    train_model(save_model_str, 10, model, learning_rate
                 , train_criterion, train_loader, device, model_optimizer
                 , use_all_data_to_train, val_loader, exp_name, score, info)
 
