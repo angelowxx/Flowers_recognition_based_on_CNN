@@ -126,7 +126,7 @@ def main(data_dir,
                               shuffle=True)
 
     info = 'Fine tuning [1/3]'
-    learning_rate = 0.00001
+    learning_rate = 0.0005
     model.freeze_convolution_layers()
     train_model(save_model_str, 20, model, learning_rate
                 , train_criterion, train_loader, device, model_optimizer
