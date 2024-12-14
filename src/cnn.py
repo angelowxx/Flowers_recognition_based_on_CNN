@@ -47,19 +47,19 @@ class HomemadeModel(nn.Module):
         self.fc1 = nn.Linear(in_features=360, out_features=100)
         self.fc2 = nn.Linear(in_features=100, out_features=num_classes)
 
-        self.dropout = nn.Dropout(p=0.2)
-        self.dropout2d = nn.Dropout2d(p=0.5)
+        self.dropout = nn.Identity()
+        self.dropout2d = nn.Identity()
 
     def forward(self, x):
         x = self.conv1(x)
         x = self.pool(x)
-        # x = self.dropout2d(x)
+        x = self.dropout2d(x)
         x = self.conv2(x)
         x = self.pool(x)
-        # x = self.dropout2d(x)
+        x = self.dropout2d(x)
         x = self.conv3(x)
         x = self.pool(x)
-        # x = self.dropout2d(x)
+        x = self.dropout2d(x)
         x = self.conv4(x)
         x = self.pool(x)
 
@@ -71,3 +71,16 @@ class HomemadeModel(nn.Module):
         x = self.fc2(x)
 
         return x
+
+    def freeze_cnn_parameters(self):
+        for param in self.parameters():
+            param.requires_grad = False
+        for param in self.fc1.parameters():
+            param.requires_grad = True
+        for param in self.fc2.parameters():
+            param.requires_grad = True
+
+    def add_dropout(self):
+        # self.dropout = nn.Dropout(p=0.2)
+        self.dropout2d = nn.Dropout2d(p=0.5)
+
