@@ -101,7 +101,7 @@ def main(data_dir,
 
     data_augmentations = [cropping_img, translation_rotation, data_augmentation_pipline]
     augmentation_times = [2, 2, 3]
-    num_epochs = [20, 20, 50]
+    num_epochs = [20, 20, 40]
     learning_rates = [0.005, 0.002, 0.002]
 
     augmentation_types = len(data_augmentations)
