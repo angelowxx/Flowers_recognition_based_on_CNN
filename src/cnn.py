@@ -92,13 +92,13 @@ class HandmadeModel(nn.Module):
         super(HandmadeModel, self).__init__()
         self.conv1 = nn.Conv2d(in_channels=input_shape[0], out_channels=20, kernel_size=(3, 3), padding=(1, 1))
 
-        self.conv2 = nn.Conv2d(in_channels=20, out_channels=11, kernel_size=(3, 3), padding=(1, 1))
+        self.conv2 = nn.Conv2d(in_channels=20, out_channels=15, kernel_size=(3, 3), padding=(1, 1))
         self.conv3 = nn.Conv2d(in_channels=20, out_channels=10, kernel_size=(3, 3), padding=(2, 2), dilation=2)
-        self.conv4 = nn.Conv2d(in_channels=20, out_channels=10, kernel_size=(3, 3), padding=(3, 3), dilation=3)
+        self.conv4 = nn.Conv2d(in_channels=20, out_channels=6, kernel_size=(3, 3), padding=(3, 3), dilation=3)
 
-        self.conv5 = nn.Conv2d(in_channels=31, out_channels=15, kernel_size=(3, 3), padding=(1, 1))
+        self.conv5 = nn.Conv2d(in_channels=31, out_channels=20, kernel_size=(3, 3), padding=(1, 1))
         self.conv6 = nn.Conv2d(in_channels=31, out_channels=15, kernel_size=(3, 3), padding=(2, 2), dilation=2)
-        self.conv7 = nn.Conv2d(in_channels=31, out_channels=15, kernel_size=(3, 3), padding=(3, 3), dilation=3)
+        self.conv7 = nn.Conv2d(in_channels=31, out_channels=10, kernel_size=(3, 3), padding=(3, 3), dilation=3)
 
         self.conv8 = nn.Conv2d(in_channels=45, out_channels=65, kernel_size=(3, 3), padding=(1, 1))
         self.conv9 = nn.Conv2d(in_channels=65, out_channels=90, kernel_size=(3, 3), padding=(1, 1))
@@ -110,6 +110,10 @@ class HandmadeModel(nn.Module):
 
         self.dropout = nn.Dropout(p=0.2)
         self.dropout2d = nn.Dropout2d(p=0.2)
+
+        self.mode = -1
+        self.layers = [self.conv1, self.conv2, self.conv3, self.conv4, self.conv5,
+                       self.conv6, self.conv7, self.conv8, self.conv9, self.fc2]
 
     def forward(self, x):
         x = self.conv1(x)
@@ -160,3 +164,16 @@ class HandmadeModel(nn.Module):
             param.requires_grad = False
         """for param in self.fc1.parameters():
             param.requires_grad = False"""
+
+    def freeze_all_parameters(self):
+        for param in self.parameters():
+            param.requires_grad = False
+        self.mode = -1
+
+    def step(self):
+        for param in self.layers[self.mode].parameters():
+            param.requires_grad = False
+        self.mode = (self.mode+1) % len(self.layers)
+        for param in self.layers[self.mode].parameters():
+            param.requires_grad = True
+
