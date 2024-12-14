@@ -100,7 +100,8 @@ def main(data_dir,
                     , use_all_data_to_train, val_loader, exp_name, score, 'Pre-training')
 
     data_augmentations = [translation_rotation, cropping_img, resize_and_colour_jitter, data_augmentation_pipline]
-    augmentation_times = [2, 2, 2, 2]
+    augmentation_times = [2, 2, 2, 1]
+    num_epochs = [20, 20, 20, 30]
 
     augmentation_types = len(data_augmentations)
     train_data = [train_data]
@@ -108,18 +109,19 @@ def main(data_dir,
     for i in range(augmentation_types):
         data_augmentation = data_augmentations[i]
         augmentation_time = augmentation_times[i]
+        num_epoch = num_epochs[i]
         train_data = [ImageFolder(os.path.join(data_dir, 'train'), transform=data_augmentation) for i in
                       range(augmentation_time)] + train_data
 
-    train_loader = DataLoader(dataset=ConcatDataset(train_data),
-                              batch_size=batch_size,
-                              shuffle=True)
+        train_loader = DataLoader(dataset=ConcatDataset(train_data),
+                                  batch_size=batch_size,
+                                  shuffle=True)
 
-    info = 'Training'
-    learning_rate = 0.005
-    train_model(save_model_str, 40, model, learning_rate
-                , train_criterion, train_loader, device, model_optimizer
-                , use_all_data_to_train, val_loader, exp_name, score, info)
+        info = 'Training [{}/{}]'.format(i+1, augmentation_types)
+        learning_rate = 0.005
+        train_model(save_model_str, num_epoch, model, learning_rate
+                    , train_criterion, train_loader, device, model_optimizer
+                    , use_all_data_to_train, val_loader, exp_name, score, info)
 
     model.freeze_all_parameters()
     for i in range(20):
