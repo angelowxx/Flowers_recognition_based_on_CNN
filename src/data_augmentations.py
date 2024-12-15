@@ -8,14 +8,14 @@ resize_to_64x64 = transforms.Compose([
 
 resize_and_colour_jitter = transforms.Compose([
     transforms.Resize((64, 64)),
-    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
+    transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0.3),
     transforms.ToTensor()
 ])
 
 
 translation_rotation = transforms.Compose([
     transforms.Resize((64, 64)),
-    transforms.RandomAffine(degrees=90, translate=(0.2, 0.2), shear=20, scale=(0.8, 1.2)),
+    transforms.RandomAffine(degrees=90, translate=(0.3, 0.3), shear=25, scale=(0.7, 1.3)),
     transforms.RandomVerticalFlip(p=0.5),
     transforms.RandomHorizontalFlip(p=0.5),
     transforms.ToTensor(),
