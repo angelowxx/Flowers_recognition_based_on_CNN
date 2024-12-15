@@ -106,7 +106,7 @@ def main(data_dir,
     augmentation_times = [3, 3, 5, 1]
     num_epochs = [20, 15, 30, 40]
     learning_rates = [0.005, 0.005, 0.005, 0.008]
-    batch_sizes = [256, 512, 1024]
+    batch_sizes = [256, 512, 800]
 
     augmentation_types = len(data_augmentations)
     train_data = [train_data]
@@ -131,7 +131,7 @@ def main(data_dir,
                     , train_criterion, train_loader, device
                     , use_all_data_to_train, val_loader, exp_name+'_data_augmentation', score, info)
 
-    model.freeze_all_parameters()
+    """model.freeze_all_parameters()
     for i in range(20):
         info = 'Training single layer [{}/{}]'.format(i+1, 10)
         model.step()
@@ -140,7 +140,7 @@ def main(data_dir,
         scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=2)
         train_model(save_model_str, 10, model, scheduler, optimizer
                     , train_criterion, train_loader, device
-                    , use_all_data_to_train, val_loader, exp_name+'_fine_tuning', score, info)
+                    , use_all_data_to_train, val_loader, exp_name+'_fine_tuning', score, info)"""
 
     if not use_all_data_to_train:
         logging.info('Accuracy at each epoch: ' + str(score))
