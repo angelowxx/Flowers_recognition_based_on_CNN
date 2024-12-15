@@ -92,17 +92,20 @@ def main(data_dir,
     train_loader = DataLoader(dataset=train_data,
                               batch_size=batch_size,
                               shuffle=True)
+    optimizer = model_optimizer(model.parameters(), lr=0.005)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=10, gamma=0.5)
     if continue_training:
         model.load_state_dict(torch.load(os.path.join(os.getcwd(), 'models', 'default_model')))
     else:
-        train_model(save_model_str, 30, model, 0.005
-                    , train_criterion, train_loader, device, model_optimizer
+        train_model(save_model_str, 30, model, scheduler, optimizer
+                    , train_criterion, train_loader, device
                     , use_all_data_to_train, val_loader, exp_name, score, 'Pre-training')
 
     data_augmentations = [translation_rotation, cropping_img, resize_and_colour_jitter]  # , data_augmentation_pipline
+    # data_augmentations = []
     augmentation_times = [3, 2, 2, 1]
-    num_epochs = [20, 20, 20, 40]
-    learning_rates = [0.005, 0.005, 0.005, 0.008]
+    num_epochs = [15, 15, 20, 40]
+    learning_rates = [0.005, 0.005, 0.008, 0.008]
 
     augmentation_types = len(data_augmentations)
     train_data = [train_data]
@@ -120,19 +123,22 @@ def main(data_dir,
                                   shuffle=True)
 
         info = 'Training [{}/{}]'.format(i+1, augmentation_types)
-
-        train_model(save_model_str, num_epoch, model, learning_rate
-                    , train_criterion, train_loader, device, model_optimizer
-                    , use_all_data_to_train, val_loader, exp_name, score, info)
+        optimizer = model_optimizer(model.parameters(), lr=learning_rate)
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=8, gamma=0.5)
+        train_model(save_model_str, num_epoch, model, scheduler, optimizer
+                    , train_criterion, train_loader, device
+                    , use_all_data_to_train, val_loader, exp_name+'_data_augmentation', score, info)
 
     model.freeze_all_parameters()
     for i in range(20):
         info = 'Training single layer [{}/{}]'.format(i+1, 10)
         model.step()
         learning_rate = 0.0001
-        train_model(save_model_str, 6, model, learning_rate
-                    , train_criterion, train_loader, device, model_optimizer
-                    , use_all_data_to_train, val_loader, exp_name, score, info)
+        optimizer = model_optimizer(model.parameters(), lr=learning_rate)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=2)
+        train_model(save_model_str, 10, model, scheduler, optimizer
+                    , train_criterion, train_loader, device
+                    , use_all_data_to_train, val_loader, exp_name+'_fine_tuning', score, info)
 
     if not use_all_data_to_train:
         logging.info('Accuracy at each epoch: ' + str(score))

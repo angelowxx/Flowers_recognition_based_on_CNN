@@ -9,11 +9,10 @@ import time
 from src.eval.evaluate import AverageMeter, accuracy, eval_fn
 
 
-def train_model(save_model_str, num_epochs, model, learning_rate
-                , train_criterion, train_loader, device, model_optimizer
+def train_model(save_model_str, num_epochs, model, scheduler, optimizer
+                , train_criterion, train_loader, device
                 , use_all_data_to_train, val_loader, exp_name, score, info):
-    optimizer = model_optimizer(model.parameters(), lr=learning_rate)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=5, gamma=0.5)
+
     # Train the model
     if save_model_str:
         # Save the model checkpoint can be restored via "model = torch.load(save_model_str)"
@@ -24,7 +23,6 @@ def train_model(save_model_str, num_epochs, model, learning_rate
 
         save_model_str = os.path.join(model_save_dir, exp_name + '_model')
     min_loss = 100
-    hightest_score = 0
     for epoch in range(num_epochs):
         logging.info('#' * 50)
         logging.info(info)
@@ -33,7 +31,7 @@ def train_model(save_model_str, num_epochs, model, learning_rate
         train_score, train_loss = train_fn(model, optimizer, train_criterion, train_loader, device)
         scheduler.step()
         logging.info('Train accuracy: %f', train_score)
-        if use_all_data_to_train and min_loss > train_loss:
+        if min_loss > train_loss and save_model_str:
             min_loss = train_loss
             torch.save(model.state_dict(), save_model_str)
 
@@ -41,9 +39,9 @@ def train_model(save_model_str, num_epochs, model, learning_rate
             test_score = eval_fn(model, val_loader, device)
             logging.info('Validation accuracy: %f', test_score)
             score.append(test_score)
-            if hightest_score < test_score:
-                hightest_score = test_score
-                torch.save(model.state_dict(), save_model_str)
+
+    if save_model_str:
+        model.load_state_dict(torch.load(save_model_str))
 
 def train_fn(model, optimizer, criterion, train_loader, device):
     """
