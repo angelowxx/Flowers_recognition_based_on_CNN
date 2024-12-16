@@ -93,7 +93,7 @@ def main(data_dir,
                     , 64, train_criterion, device, exp_name, score, 'Pre-training')
 
     data_augmentations = [translation_rotation, resize_and_colour_jitter]
-    augmentation_times = [6, 6]
+    augmentation_times = [3, 3]
 
     augmentation_types = len(data_augmentations)
     # model.add_dropout()
