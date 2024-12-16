@@ -24,7 +24,6 @@ def main(data_dir,
          train_criterion=torch.nn.CrossEntropyLoss,
          model_optimizer=torch.optim.Adam,
          save_model_str=None,
-         use_all_data_to_train=False,
          exp_name='',
          continue_training=False):
     """
@@ -42,6 +41,7 @@ def main(data_dir,
     :param save_model_str: path of saved models (str)
     :param use_all_data_to_train: indicator whether we use all the data for training (bool)
     :param exp_name: experiment name (str)
+    :param continue_training: if the continue training the given model
     :return:
     """
 
@@ -71,14 +71,6 @@ def main(data_dir,
     # instantiate training criterion
     train_criterion = train_criterion().to(device)
     score = []
-    if use_all_data_to_train:
-        train_data = ConcatDataset([train_data, val_data, test_data])
-        val_loader = None
-        logging.warning('Training with all the data (train, val and test).')
-    else:
-        val_loader = DataLoader(dataset=val_data,
-                                batch_size=batch_size,
-                                shuffle=False)
 
     model = torch_model(input_shape=input_shape,
                         num_classes=len(train_data.classes)).to(device)
@@ -89,23 +81,20 @@ def main(data_dir,
     summary(model, input_shape,
             device='cuda' if torch.cuda.is_available() else 'cpu')
 
-    train_loader = DataLoader(dataset=train_data,
-                              batch_size=64,
-                              shuffle=True)
+    train_data = [train_data, val_data]
+    test_loader = DataLoader(test_data, batch_size=128, shuffle=False)
+
     optimizer = model_optimizer(model.parameters(), lr=0.005)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=8, gamma=0.5)
     if continue_training:
         model.load_state_dict(torch.load(os.path.join(os.getcwd(), 'models', 'default_model')))
     else:
-        train_model(save_model_str, 20, model, scheduler, optimizer
-                    , train_criterion, train_loader, device
-                    , use_all_data_to_train, val_loader, exp_name, score, 'Pre-training')
+        train_model(save_model_str, 5, model, optimizer, ConcatDataset(train_data), test_loader, 5
+                    , 64, train_criterion, device, exp_name, score, 'Pre-training')
 
     data_augmentations = [translation_rotation, resize_and_colour_jitter]
-    augmentation_times = [5, 5]
+    augmentation_times = [6, 6]
 
     augmentation_types = len(data_augmentations)
-    train_data = [train_data]
     # model.add_dropout()
     for i in range(augmentation_types):
         data_augmentation = data_augmentations[i]
@@ -113,16 +102,11 @@ def main(data_dir,
         train_data = [ImageFolder(os.path.join(data_dir, 'train'), transform=data_augmentation) for i in
                       range(augmentation_time)] + train_data
 
-    train_loader = DataLoader(dataset=ConcatDataset(train_data),
-                              batch_size=500,
-                              shuffle=True)
     info = 'Training'
-    optimizer = model_optimizer(model.parameters(), lr=0.005)
-    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=10, gamma=0.5)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer=optimizer, T_0=5, T_mult=2)
-    train_model(save_model_str, 35, model, scheduler, optimizer
-                , train_criterion, train_loader, device
-                , use_all_data_to_train, val_loader, exp_name + '_data_augmentation', score, info)
+
+    optimizer = model_optimizer(model.parameters(), lr=0.006)
+    train_model(save_model_str, 7, model, optimizer, ConcatDataset(train_data), test_loader, 5
+                , 512, train_criterion, device, 'augmented', score, info)
 
     """model.freeze_all_parameters()
     for i in range(2):
@@ -135,20 +119,19 @@ def main(data_dir,
                     , train_criterion, train_loader, device
                     , use_all_data_to_train, val_loader, exp_name+'_fine_tuning', score, info)"""
 
-    if not use_all_data_to_train:
-        logging.info('Accuracy at each epoch: ' + str(score))
-        logging.info('Mean of accuracies across all epochs: ' + str(100 * np.mean(score)) + '%')
-        logging.info('Accuracy of model at final epoch: ' + str(100 * score[-1]) + '%')
+    logging.info('Accuracy at each epoch: ' + str(score))
+    logging.info('Mean of accuracies across all epochs: ' + str(100 * np.mean(score)) + '%')
+    logging.info('Accuracy of model at final epoch: ' + str(100 * score[-1]) + '%')
 
-        plt.plot(score)
-        plt.xlabel('epochs')
-        plt.ylabel('score')
-        save_fig_dir = os.path.join(os.getcwd(), 'figures')
+    plt.plot(score)
+    plt.xlabel('epochs')
+    plt.ylabel('score')
+    save_fig_dir = os.path.join(os.getcwd(), 'figures')
 
-        if not os.path.exists(save_fig_dir):
-            os.mkdir(save_fig_dir)
-        save_fig_dir = os.path.join(save_fig_dir, 'fig_score' + ".png")
-        plt.savefig(save_fig_dir)
+    if not os.path.exists(save_fig_dir):
+        os.mkdir(save_fig_dir)
+    save_fig_dir = os.path.join(save_fig_dir, 'fig_score' + ".png")
+    plt.savefig(save_fig_dir)
 
 
 if __name__ == '__main__':
@@ -196,9 +179,6 @@ if __name__ == '__main__':
                                 default='default',
                                 help='Name of this experiment',
                                 type=str)
-    cmdline_parser.add_argument('-a', '--use-all-data-to-train',
-                                action='store_true',
-                                help='Uses the train, validation, and test data to train the model if enabled.')
     cmdline_parser.add_argument('-c', '--continue_training',
                                 action='store_true',
                                 help='continue training the existing model.')
@@ -220,6 +200,5 @@ if __name__ == '__main__':
         model_optimizer=opti_dict[args.optimizer],
         save_model_str=args.model_path,
         exp_name=args.exp_name,
-        use_all_data_to_train=args.use_all_data_to_train,
         continue_training=args.continue_training
     )

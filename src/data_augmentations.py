@@ -15,7 +15,7 @@ to_tensor = transforms.Compose([
 add_noise = transforms.Compose([
     transforms.Resize((64, 64)),
     transforms.ToTensor(),
-    transforms.Lambda(lambda x: x + torch.randn_like(x) * 0.01)
+    transforms.Lambda(lambda x: x + torch.randn_like(x) * 0.05)
 ])
 
 resize_and_colour_jitter = transforms.Compose([
@@ -30,7 +30,19 @@ translation_rotation = transforms.Compose([
     transforms.RandomAffine(degrees=90, translate=(0.3, 0.3), shear=25, scale=(0.7, 1.3)),
     transforms.RandomVerticalFlip(p=0.5),
     transforms.RandomHorizontalFlip(p=0.5),
-    transforms.ToTensor(),
+    transforms.ToTensor()
+])
+
+vertical_flipping = transforms.Compose([
+    transforms.Resize((64, 64)),
+    transforms.RandomVerticalFlip(p=0.4),
+    transforms.ToTensor()
+])
+
+horizontal_flipping = transforms.Compose([
+    transforms.Resize((64, 64)),
+    transforms.RandomHorizontalFlip(p=0.6),
+    transforms.ToTensor()
 ])
 
 cropping_img = transforms.Compose([

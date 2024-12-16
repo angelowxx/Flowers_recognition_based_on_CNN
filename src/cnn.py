@@ -126,6 +126,7 @@ class HandmadeModel(nn.Module):
 
         x = torch.cat((x1, x2, x3), dim=1)
         x = self.pool(x)
+        # x = self.dropout2d(x)
 
         x1 = self.conv5(x)
         x2 = self.conv6(x)
@@ -133,10 +134,12 @@ class HandmadeModel(nn.Module):
 
         x = torch.cat((x1, x2, x3), dim=1)
         x = self.pool(x)
+        # x = self.dropout2d(x)
 
 
         x = self.conv8(x)
         x = self.pool(x)
+        # x = self.dropout2d(x)
         x = self.conv9(x)
         x = self.pool(x)
 
@@ -176,4 +179,7 @@ class HandmadeModel(nn.Module):
         self.mode = (self.mode+1) % len(self.layers)
         for param in self.layers[self.mode].parameters():
             param.requires_grad = True
+
+    def cancel_dropout(self):
+        self.dropout2d = nn.Identity()
 

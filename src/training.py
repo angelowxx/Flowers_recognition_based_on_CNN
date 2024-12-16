@@ -2,6 +2,8 @@ import logging
 import os
 
 import torch
+from sklearn.model_selection import KFold
+from torch.utils.data import Subset, DataLoader
 from tqdm import tqdm
 import time
 
@@ -9,11 +11,8 @@ import time
 from src.eval.evaluate import AverageMeter, accuracy, eval_fn
 
 
-def train_model(save_model_str, num_epochs, model, scheduler, optimizer
-                , train_criterion, train_loader, device
-                , use_all_data_to_train, val_loader, exp_name, score, info):
-
-    # Train the model
+def train_model(save_model_str, num_epochs, model, optimizer, train_data, test_loader, folds
+                , batch_size, train_criterion, device, exp_name, score, info):
     if save_model_str:
         # Save the model checkpoint can be restored via "model = torch.load(save_model_str)"
         model_save_dir = os.path.join(os.getcwd(), save_model_str)
@@ -22,26 +21,49 @@ def train_model(save_model_str, num_epochs, model, scheduler, optimizer
             os.mkdir(model_save_dir)
 
         save_model_str = os.path.join(model_save_dir, exp_name + '_model')
-    min_loss = 100
-    for epoch in range(num_epochs):
-        logging.info('#' * 50)
-        logging.info(info)
-        logging.info('Epoch [{}/{}]'.format(epoch + 1, num_epochs))
 
-        train_score, train_loss = train_fn(model, optimizer, train_criterion, train_loader, device)
-        scheduler.step()
-        logging.info('Train accuracy: %f', train_score)
-        if min_loss > train_loss and save_model_str:
-            min_loss = train_loss
-            torch.save(model.state_dict(), save_model_str)
+    kfold = KFold(n_splits=folds, shuffle=True, random_state=42)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=num_epochs, gamma=0.5)
 
-        if not use_all_data_to_train:
-            test_score = eval_fn(model, val_loader, device)
-            logging.info('Validation accuracy: %f', test_score)
+    for fold, (train_idx, val_idx) in enumerate(kfold.split(train_data)):
+
+        train_subset = Subset(train_data, train_idx)
+        val_subset = Subset(train_data, val_idx)
+
+        train_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=True)
+        val_loader = DataLoader(val_subset, batch_size=batch_size, shuffle=False)
+
+        # Train the model
+        highest_val_score = 0
+        de_cnt = 0
+        for epoch in range(num_epochs):
+            logging.info('#' * 50)
+            logging.info(info)
+            logging.info('Fold [{}/{}]'.format(fold + 1, folds))
+            logging.info('Epoch [{}/{}]'.format(epoch + 1, num_epochs))
+
+            train_score, train_loss = train_fn(model, optimizer, train_criterion, train_loader, device)
+            scheduler.step()
+            logging.info('Train accuracy: %f', train_score)
+
+            val_score = eval_fn(model, val_loader, device)
+            logging.info('Validation accuracy: %f', val_score)
+
+            test_score = eval_fn(model, test_loader, device)
+            logging.info('Test accuracy: %f', test_score)
             score.append(test_score)
 
-    if save_model_str:
-        model.load_state_dict(torch.load(save_model_str))
+            if highest_val_score < val_score or val_score > train_score:
+                highest_val_score = val_score
+                de_cnt = 0
+            else:
+                de_cnt += 1
+
+            if de_cnt >= 2 or train_score > 0.95:
+                logging.info('#' * 20 + 'early stop!' + '#' * 19)
+                break
+
+    torch.save(model.state_dict(), save_model_str)
 
 def train_fn(model, optimizer, criterion, train_loader, device):
     """
