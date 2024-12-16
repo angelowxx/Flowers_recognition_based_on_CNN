@@ -84,10 +84,10 @@ def main(data_dir,
     train_data = [train_data, val_data]
     test_loader = DataLoader(test_data, batch_size=128, shuffle=False)
 
-    optimizer = model_optimizer(model.parameters(), lr=0.005)
     if continue_training:
         model.load_state_dict(torch.load(os.path.join(os.getcwd(), 'models', 'default_model')))
     else:
+        optimizer = model_optimizer(model.parameters(), lr=0.005)
         train_model(save_model_str, 7, model, optimizer, ConcatDataset(train_data), test_loader, 7
                     , 64, train_criterion, device, exp_name, score, 'Pre-training')
 
