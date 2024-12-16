@@ -84,40 +84,34 @@ def main(data_dir,
     train_data = [train_data, val_data]
     test_loader = DataLoader(test_data, batch_size=128, shuffle=False)
 
-    optimizer = model_optimizer(model.parameters(), lr=0.005)
     if continue_training:
         model.load_state_dict(torch.load(os.path.join(os.getcwd(), 'models', 'default_model')))
     else:
-        train_model(save_model_str, 7, model, optimizer, ConcatDataset(train_data), test_loader, 7
+        model.set_dropout()
+        optimizer = model_optimizer(model.parameters(), lr=0.002)
+        train_model(save_model_str, 10, model, optimizer, ConcatDataset(train_data), test_loader, 7
                     , 64, train_criterion, device, exp_name, score, 'Pre-training')
 
     data_augmentations = [translation_rotation, resize_and_colour_jitter]
     augmentation_times = [6, 6]
 
     augmentation_types = len(data_augmentations)
-    # model.add_dropout()
     for i in range(augmentation_types):
         data_augmentation = data_augmentations[i]
         augmentation_time = augmentation_times[i]
         train_data = [ImageFolder(os.path.join(data_dir, 'train'), transform=data_augmentation) for i in
                       range(augmentation_time)] + train_data
+        train_data = [ImageFolder(os.path.join(data_dir, 'val'), transform=data_augmentation) for i in
+                      range(augmentation_time)] + train_data
 
     info = 'Training'
 
+    # model.cancel_dropout()
+    # model.set_dropout()
     optimizer = model_optimizer(model.parameters(), lr=0.006)
-    train_model(save_model_str, 7, model, optimizer, ConcatDataset(train_data), test_loader, 7
-                , 512, train_criterion, device, 'augmented', score, info)
+    train_model(save_model_str, 8, model, optimizer, ConcatDataset(train_data), test_loader, 7
+                , 500, train_criterion, device, 'augmented', score, info)
 
-    """model.freeze_all_parameters()
-    for i in range(2):
-        info = 'Training single layer [{}/{}]'.format(i+1, 2)
-        model.step()
-        learning_rate = 0.0001
-        optimizer = model_optimizer(model.parameters(), lr=learning_rate)
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=2)
-        train_model(save_model_str, 10, model, scheduler, optimizer
-                    , train_criterion, train_loader, device
-                    , use_all_data_to_train, val_loader, exp_name+'_fine_tuning', score, info)"""
 
     logging.info('Accuracy at each epoch: ' + str(score))
     logging.info('Mean of accuracies across all epochs: ' + str(100 * np.mean(score)) + '%')

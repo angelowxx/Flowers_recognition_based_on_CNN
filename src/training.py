@@ -60,7 +60,7 @@ def train_model(save_model_str, num_epochs, model, optimizer, train_data, test_l
                 de_cnt += 1
             pre_val_score = val_score
 
-            if de_cnt >= 2 or train_score > 0.97:
+            if de_cnt >= 2 or train_score > 0.98:
                 logging.info('#' * 20 + 'early stop!' + '#' * 19)
                 for i in range(num_epochs-epoch-1):
                     scheduler.step()
