@@ -126,7 +126,6 @@ class HandmadeModel(nn.Module):
 
         x = torch.cat((x1, x2, x3), dim=1)
         x = self.pool(x)
-        # x = self.dropout2d(x)
 
         x1 = self.conv5(x)
         x2 = self.conv6(x)
@@ -139,14 +138,10 @@ class HandmadeModel(nn.Module):
 
         x = self.conv8(x)
         x = self.pool(x)
-        # x = self.dropout2d(x)
         x = self.conv9(x)
         x = self.pool(x)
 
         x = x.view(x.size(0), -1)
-        #x = self.fc1(x)
-        #x = self.dropout(x)
-        #x = F.leaky_relu(x)
         x = self.fc2(x)
         x = F.leaky_relu(x)
 

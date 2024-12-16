@@ -23,7 +23,8 @@ def train_model(save_model_str, num_epochs, model, optimizer, train_data, test_l
         save_model_str = os.path.join(model_save_dir, exp_name + '_model')
 
     kfold = KFold(n_splits=folds, shuffle=True, random_state=42)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=num_epochs, gamma=0.5)
+    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=num_epochs, gamma=0.5)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer=optimizer, T_0=num_epochs, T_mult=2)
 
     for fold, (train_idx, val_idx) in enumerate(kfold.split(train_data)):
 
@@ -34,7 +35,7 @@ def train_model(save_model_str, num_epochs, model, optimizer, train_data, test_l
         val_loader = DataLoader(val_subset, batch_size=batch_size, shuffle=False)
 
         # Train the model
-        highest_val_score = 0
+        pre_val_score = 0
         de_cnt = 0
         for epoch in range(num_epochs):
             logging.info('#' * 50)
@@ -53,14 +54,16 @@ def train_model(save_model_str, num_epochs, model, optimizer, train_data, test_l
             logging.info('Test accuracy: %f', test_score)
             score.append(test_score)
 
-            if highest_val_score < val_score or val_score > train_score:
-                highest_val_score = val_score
+            if pre_val_score < val_score or val_score > train_score:
                 de_cnt = 0
             else:
                 de_cnt += 1
+            pre_val_score = val_score
 
-            if de_cnt >= 2 or train_score > 0.95:
+            if de_cnt >= 2 or train_score > 0.97:
                 logging.info('#' * 20 + 'early stop!' + '#' * 19)
+                for i in range(num_epochs-epoch-1):
+                    scheduler.step()
                 break
 
     torch.save(model.state_dict(), save_model_str)
