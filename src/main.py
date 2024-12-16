@@ -112,6 +112,7 @@ def main(data_dir,
                 , 512, train_criterion, device, 'augmented', score, info)
 
 
+
     logging.info('Accuracy at each epoch: ' + str(score))
     logging.info('Mean of accuracies across all epochs: ' + str(100 * np.mean(score)) + '%')
     logging.info('Accuracy of model at final epoch: ' + str(100 * score[-1]) + '%')
