@@ -87,8 +87,8 @@ def main(data_dir,
     if continue_training:
         model.load_state_dict(torch.load(os.path.join(os.getcwd(), 'models', 'default_model')))
     else:
-        # model.set_dropout()
-        optimizer = model_optimizer(model.parameters(), lr=0.005)
+        model.set_dropout()
+        optimizer = model_optimizer(model.parameters(), lr=0.003)
         train_model(save_model_str, 5, model, optimizer, ConcatDataset(train_data), test_loader, 7
                     , 64, train_criterion, device, exp_name, score, 'Pre-training')
 
@@ -96,6 +96,7 @@ def main(data_dir,
     augmentation_times = [6, 6]
 
     augmentation_types = len(data_augmentations)
+    # model.add_dropout()
     for i in range(augmentation_types):
         data_augmentation = data_augmentations[i]
         augmentation_time = augmentation_times[i]
@@ -105,12 +106,10 @@ def main(data_dir,
                       range(augmentation_time)] + train_data
 
     info = 'Training'
-
-    # model.cancel_dropout()
-    # model.set_dropout()
+    model.cancel_dropout()
     optimizer = model_optimizer(model.parameters(), lr=0.006)
-    train_model(save_model_str, 8, model, optimizer, ConcatDataset(train_data), test_loader, 7
-                , 500, train_criterion, device, 'augmented', score, info)
+    train_model(save_model_str, 7, model, optimizer, ConcatDataset(train_data), test_loader, 7
+                , 512, train_criterion, device, 'augmented', score, info)
 
 
     logging.info('Accuracy at each epoch: ' + str(score))
