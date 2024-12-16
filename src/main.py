@@ -88,8 +88,8 @@ def main(data_dir,
         model.load_state_dict(torch.load(os.path.join(os.getcwd(), 'models', 'default_model')))
     else:
         # model.set_dropout()
-        optimizer = model_optimizer(model.parameters(), lr=0.002)
-        train_model(save_model_str, 10, model, optimizer, ConcatDataset(train_data), test_loader, 7
+        optimizer = model_optimizer(model.parameters(), lr=0.005)
+        train_model(save_model_str, 5, model, optimizer, ConcatDataset(train_data), test_loader, 7
                     , 64, train_criterion, device, exp_name, score, 'Pre-training')
 
     data_augmentations = [translation_rotation, resize_and_colour_jitter]
