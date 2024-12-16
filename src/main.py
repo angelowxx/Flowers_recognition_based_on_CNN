@@ -106,7 +106,7 @@ def main(data_dir,
 
     info = 'Training'
 
-    # model.cancel_dropout()
+    model.cancel_dropout()
     # model.set_dropout()
     optimizer = model_optimizer(model.parameters(), lr=0.006)
     train_model(save_model_str, 8, model, optimizer, ConcatDataset(train_data), test_loader, 7
