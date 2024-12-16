@@ -105,7 +105,7 @@ def main(data_dir,
     info = 'Training'
 
     optimizer = model_optimizer(model.parameters(), lr=0.006)
-    train_model(save_model_str, 7, model, optimizer, ConcatDataset(train_data), test_loader, 5
+    train_model(save_model_str, 7, model, optimizer, ConcatDataset(train_data), test_loader, 6
                 , 512, train_criterion, device, 'augmented', score, info)
 
     """model.freeze_all_parameters()
