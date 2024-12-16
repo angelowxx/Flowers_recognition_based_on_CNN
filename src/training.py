@@ -23,7 +23,7 @@ def train_model(save_model_str, num_epochs, model, optimizer, train_data, test_l
         save_model_str = os.path.join(model_save_dir, exp_name + '_model')
 
     kfold = KFold(n_splits=folds, shuffle=True, random_state=42)
-    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=num_epochs, gamma=0.5)
+
     scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer=optimizer, T_0=num_epochs, T_mult=2)
 
     for fold, (train_idx, val_idx) in enumerate(kfold.split(train_data)):
@@ -60,7 +60,7 @@ def train_model(save_model_str, num_epochs, model, optimizer, train_data, test_l
                 de_cnt += 1
             pre_val_score = val_score
 
-            if de_cnt >= 2 or train_score > 0.97:
+            if de_cnt >= 2 or train_score > 0.98:
                 logging.info('#' * 20 + 'early stop!' + '#' * 19)
                 for i in range(num_epochs-epoch-1):
                     scheduler.step()

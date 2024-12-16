@@ -105,41 +105,18 @@ class HandmadeModel(nn.Module):
         self.pool = nn.MaxPool2d(3, stride=2)
         # The input features for the linear layer depends on the size of the input to the convolutional layer
         # So if you resize your image in data augmentations, you'll have to tweak this too.
-        #self.fc1 = nn.Linear(in_features=60, out_features=30)
         self.fc2 = nn.Linear(in_features=90, out_features=num_classes)
 
         self.dropout = nn.Dropout(p=0.2)
-        self.dropout2d = nn.Dropout2d(p=0.2)
+        self.dropout2d = nn.Dropout2d(p=0.5)
 
-        self.layers = [self.conv1, self.conv2, self.conv3, self.conv4, self.conv5,
-                       self.conv6, self.conv7, self.conv8, self.conv9, self.fc2]
-        self.mode = len(self.layers)-1
+        self.layers = [self.conv1, self.pool, self.multi_conv1, self.pool, self.multi_conv2,
+                       self.pool, self.conv8, self.pool, self.conv9, self.pool]
 
     def forward(self, x):
-        x = self.conv1(x)
-        x = self.pool(x)
-        #x = self.dropout2d(x)
 
-        x1 = self.conv2(x)
-        x2 = self.conv3(x)
-        x3 = self.conv4(x)
-
-        x = torch.cat((x1, x2, x3), dim=1)
-        x = self.pool(x)
-
-        x1 = self.conv5(x)
-        x2 = self.conv6(x)
-        x3 = self.conv7(x)
-
-        x = torch.cat((x1, x2, x3), dim=1)
-        x = self.pool(x)
-        # x = self.dropout2d(x)
-
-
-        x = self.conv8(x)
-        x = self.pool(x)
-        x = self.conv9(x)
-        x = self.pool(x)
+        for fn in self.layers:
+            x = fn(x)
 
         x = x.view(x.size(0), -1)
         x = self.fc2(x)
@@ -147,34 +124,39 @@ class HandmadeModel(nn.Module):
 
         return x
 
+    def multi_conv1(self, x):
+        x1 = self.conv2(x)
+        x2 = self.conv3(x)
+        x3 = self.conv4(x)
+
+        x = torch.cat((x1, x2, x3), dim=1)
+        return x
+
+    def multi_conv2(self, x):
+        x1 = self.conv5(x)
+        x2 = self.conv6(x)
+        x3 = self.conv7(x)
+
+        x = torch.cat((x1, x2, x3), dim=1)
+        return x
+
     def freeze_convolution_layers(self):
         for param in self.parameters():
             param.requires_grad = False
         for param in self.fc2.parameters():
             param.requires_grad = True
-        """for param in self.fc1.parameters():
-            param.requires_grad = True"""
 
     def freeze_linear_layers(self):
         for param in self.parameters():
             param.requires_grad = True
         for param in self.fc2.parameters():
             param.requires_grad = False
-        """for param in self.fc1.parameters():
-            param.requires_grad = False"""
-
-    def freeze_all_parameters(self):
-        for param in self.parameters():
-            param.requires_grad = False
-        self.mode = len(self.layers)-1
-
-    def step(self):
-        for param in self.layers[self.mode].parameters():
-            param.requires_grad = False
-        self.mode = (self.mode+1) % len(self.layers)
-        for param in self.layers[self.mode].parameters():
-            param.requires_grad = True
 
     def cancel_dropout(self):
-        self.dropout2d = nn.Identity()
+        self.layers = [self.conv1, self.pool, self.multi_conv1, self.pool, self.multi_conv2,
+                       self.pool, self.conv8, self.pool, self.conv9, self.pool]
+
+    def set_dropout(self):
+        self.layers = [self.conv1, self.pool, self.multi_conv1, self.pool, self.dropout2d, self.multi_conv2,
+                       self.pool, self.dropout2d, self.conv8, self.pool, self.conv9, self.pool]
 

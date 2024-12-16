@@ -20,14 +20,14 @@ add_noise = transforms.Compose([
 
 resize_and_colour_jitter = transforms.Compose([
     transforms.Resize((64, 64)),
-    transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.3, hue=0.1),
+    transforms.ColorJitter(brightness=0.5, contrast=0.3, saturation=0.3, hue=0.1),
     transforms.ToTensor(),
 ])
 
 
 translation_rotation = transforms.Compose([
     transforms.Resize((64, 64)),
-    transforms.RandomAffine(degrees=90, translate=(0.3, 0.3), shear=25, scale=(0.7, 1.3)),
+    transforms.RandomAffine(degrees=180, translate=(0.3, 0.3), shear=25, scale=(0.7, 1.3)),
     transforms.RandomVerticalFlip(p=0.5),
     transforms.RandomHorizontalFlip(p=0.5),
     transforms.ToTensor()
@@ -35,13 +35,13 @@ translation_rotation = transforms.Compose([
 
 vertical_flipping = transforms.Compose([
     transforms.Resize((64, 64)),
-    transforms.RandomVerticalFlip(p=0.4),
+    transforms.RandomVerticalFlip(p=1),
     transforms.ToTensor()
 ])
 
 horizontal_flipping = transforms.Compose([
     transforms.Resize((64, 64)),
-    transforms.RandomHorizontalFlip(p=0.6),
+    transforms.RandomHorizontalFlip(p=1),
     transforms.ToTensor()
 ])
 
@@ -54,11 +54,10 @@ cropping_img = transforms.Compose([
 data_augmentation_pipline = transforms.Compose([
     transforms.RandomCrop(size=(64, 64)),
     transforms.RandomAffine(degrees=(0, 90), translate=(0.3, 0.3), shear=30, scale=(0.7, 1.3)),  #
-    transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0.3),
+    transforms.ColorJitter(brightness=0.5, contrast=0.3, saturation=0.3, hue=0.1),
     transforms.RandomVerticalFlip(p=0.5),
     transforms.RandomHorizontalFlip(p=0.5),
     transforms.ToTensor(),
-    transforms.Lambda(lambda x: x + torch.randn_like(x) * 0.1)
 ])
 
 
