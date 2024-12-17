@@ -32,7 +32,7 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
 
         if fold == 3:
             optimizer = model_optimizer(model.parameters(), lr=lr/2)
-            scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer=optimizer, T_0=num_epochs*2,
+            scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer=optimizer, T_0=num_epochs*4,
                                                                              T_mult=2)
         train_subset = Subset(train_data, train_idx)
         val_subset = Subset(train_data, val_idx)
