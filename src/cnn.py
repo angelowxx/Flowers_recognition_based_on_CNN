@@ -90,7 +90,11 @@ class HomemadeModel(nn.Module):
 class FastCNN(nn.Module):
     def __init__(self, input_shape=(3, 128, 128), num_classes=17):
         super(FastCNN, self).__init__()
-        self.conv1 = nn.Conv2d(in_channels=input_shape[0], out_channels=20, kernel_size=(3, 3), padding=(1, 1))
+        self.conv1_1 = nn.Conv2d(in_channels=input_shape[0], out_channels=10, kernel_size=(3, 3), padding=(1, 1))
+        self.conv1_2 = nn.Conv2d(in_channels=input_shape[0], out_channels=7,
+                                 kernel_size=(3, 3), padding=(2, 2), dilation=2)
+        self.conv1_3 = nn.Conv2d(in_channels=input_shape[0], out_channels=3,
+                                 kernel_size=(3, 3), padding=(3, 3), dilation=3)
 
         self.conv2 = nn.Conv2d(in_channels=20, out_channels=15, kernel_size=(3, 3), padding=(1, 1))
         self.conv3 = nn.Conv2d(in_channels=20, out_channels=10, kernel_size=(3, 3), padding=(2, 2), dilation=2)
@@ -110,7 +114,7 @@ class FastCNN(nn.Module):
         self.dropout = nn.Dropout(p=0.2)
         self.dropout2d = nn.Dropout2d(p=0.2)
 
-        self.layers = [self.conv1, self.pool, self.multi_conv1, self.pool, self.multi_conv2,
+        self.layers = [self.multi_conv1, self.pool, self.multi_conv2, self.pool, self.multi_conv3,
                        self.pool, self.conv8, self.pool, self.conv9, self.pool, self.dropout2d]
 
     def forward(self, x):
@@ -125,6 +129,14 @@ class FastCNN(nn.Module):
         return x
 
     def multi_conv1(self, x):
+        x1 = self.conv1_1(x)
+        x2 = self.conv1_2(x)
+        x3 = self.conv1_3(x)
+
+        x = torch.cat((x1, x2, x3), dim=1)
+        return x
+
+    def multi_conv2(self, x):
         x1 = self.conv2(x)
         x2 = self.conv3(x)
         x3 = self.conv4(x)
@@ -132,7 +144,7 @@ class FastCNN(nn.Module):
         x = torch.cat((x1, x2, x3), dim=1)
         return x
 
-    def multi_conv2(self, x):
+    def multi_conv3(self, x):
         x1 = self.conv5(x)
         x2 = self.conv6(x)
         x3 = self.conv7(x)
