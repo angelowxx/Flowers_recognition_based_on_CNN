@@ -14,5 +14,5 @@ Fast Networks Track - python -m src.main -m FastCNN
 Large Networks Track - N/A
 
 ##### Command to evaluate your model
-Fast Networks Track - python -m src.evaluate_model -m FastCNN -p augmented_model
+Fast Networks Track - python -m src.evaluate_model -m FastCNN -p augmented_model -d resize_to_128x128
 Large Networks Track - N/A
