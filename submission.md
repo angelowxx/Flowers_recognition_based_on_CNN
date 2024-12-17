@@ -2,7 +2,7 @@
 Fast Networks Track
 
 ##### What are the number of learnable parameters in your model?
-Fast Networks Track - 99 448
+Fast Networks Track - 99 973
 Large Networks Track - N/A
 
 ##### Briefly describe your approach
