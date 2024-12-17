@@ -52,7 +52,7 @@ def main(data_dir,
     elif not isinstance(data_augmentations, transforms.Compose):
         raise NotImplementedError"""
     # data_augmentations = data_augmentations[0]
-    base_transform = resize_to_64x64
+    base_transform = resize_to_128x128
 
     # Load the dataset
     train_data = ImageFolder(os.path.join(data_dir, 'train'), transform=base_transform)
