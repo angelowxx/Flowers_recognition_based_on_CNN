@@ -1,14 +1,18 @@
 import torch
 from torchvision import transforms
 
+# normalization parameters from imageNet
+normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+
 resize_to_64x64 = transforms.Compose([
     transforms.Resize((64, 64)),
-    transforms.ToTensor()
+    transforms.ToTensor(),
+    normalize
 ])
 
 resize_to_128x128 = transforms.Compose([
     transforms.Resize((128, 128)),
-    transforms.ToTensor()
+    transforms.ToTensor(),
 ])
 
 to_tensor = transforms.Compose([
@@ -34,7 +38,7 @@ translation_rotation = transforms.Compose([
     transforms.RandomAffine(degrees=90, translate=(0.3, 0.3), shear=25, scale=(0.7, 1.3)),
     transforms.RandomVerticalFlip(p=0.5),
     transforms.RandomHorizontalFlip(p=0.5),
-    transforms.ToTensor()
+    transforms.ToTensor(),
 ])
 
 vertical_flipping = transforms.Compose([
