@@ -2,6 +2,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchvision.transforms import transforms
 
 
 class SampleModel(nn.Module):
@@ -90,6 +91,7 @@ class HomemadeModel(nn.Module):
 class FastCNN(nn.Module):
     def __init__(self, input_shape=(3, 128, 128), num_classes=17):
         super(FastCNN, self).__init__()
+        self.normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         self.conv1 = nn.Conv2d(in_channels=input_shape[0], out_channels=20, kernel_size=(3, 3), padding=(1, 1))
 
         self.conv2 = nn.Conv2d(in_channels=20, out_channels=15, kernel_size=(3, 3), padding=(1, 1))
@@ -110,7 +112,7 @@ class FastCNN(nn.Module):
         self.dropout = nn.Dropout(p=0.2)
         self.dropout2d = nn.Dropout2d(p=0.2)
 
-        self.layers = [self.conv1, self.pool, self.multi_conv1, self.pool, self.multi_conv2,
+        self.layers = [self.normalize, self.conv1, self.pool, self.multi_conv1, self.pool, self.multi_conv2,
                        self.pool, self.conv8, self.pool, self.conv9, self.pool, self.dropout2d]
 
     def forward(self, x):
