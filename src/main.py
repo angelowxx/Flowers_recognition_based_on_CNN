@@ -83,7 +83,7 @@ def main(data_dir,
     if continue_training:
         model.load_state_dict(torch.load(os.path.join(os.getcwd(), 'models', exp_name+'_model')))
     else:
-        train_model(save_model_str, 3, model, model_optimizer, 0.003, ConcatDataset(train_data), test_loader, 7
+        train_model(save_model_str, 5, model, model_optimizer, 0.003, ConcatDataset(train_data), test_loader, 7
                     , 64, train_criterion, device, exp_name, score, 'Pre-training')
 
     data_augmentations = [translation_rotation, resize_and_colour_jitter]
