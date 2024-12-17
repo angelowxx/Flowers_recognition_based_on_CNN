@@ -1,5 +1,4 @@
 import os
-import torch
 import logging
 import argparse
 
@@ -13,7 +12,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('DL WS24/25 Competition')
 
     parser.add_argument('-m', '--model',
-                        default='SampleModel',
+                        default='FastCNN',
                         help='Name of the Model class present in cnn.py (Eg: SampleModel)',
                         type=str)
 

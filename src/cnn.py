@@ -87,9 +87,9 @@ class HomemadeModel(nn.Module):
             param.requires_grad = False
 
 
-class HandmadeModel(nn.Module):
+class FastCNN(nn.Module):
     def __init__(self, input_shape=(3, 64, 64), num_classes=17):
-        super(HandmadeModel, self).__init__()
+        super(FastCNN, self).__init__()
         self.conv1 = nn.Conv2d(in_channels=input_shape[0], out_channels=20, kernel_size=(3, 3), padding=(1, 1))
 
         self.conv2 = nn.Conv2d(in_channels=20, out_channels=15, kernel_size=(3, 3), padding=(1, 1))
@@ -108,10 +108,10 @@ class HandmadeModel(nn.Module):
         self.fc2 = nn.Linear(in_features=90, out_features=num_classes)
 
         self.dropout = nn.Dropout(p=0.2)
-        self.dropout2d = nn.Dropout2d(p=0.5)
+        self.dropout2d = nn.Dropout2d(p=0.2)
 
         self.layers = [self.conv1, self.pool, self.multi_conv1, self.pool, self.multi_conv2,
-                       self.pool, self.conv8, self.pool, self.conv9, self.pool]
+                       self.pool, self.conv8, self.pool, self.conv9, self.pool, self.dropout2d]
 
     def forward(self, x):
 
@@ -157,6 +157,6 @@ class HandmadeModel(nn.Module):
                        self.pool, self.conv8, self.pool, self.conv9, self.pool]
 
     def set_dropout(self):
-        self.layers = [self.conv1, self.pool, self.multi_conv1, self.pool, self.dropout2d, self.multi_conv2,
-                       self.pool, self.dropout2d, self.conv8, self.pool, self.conv9, self.pool]
+        self.layers = [self.conv1, self.pool, self.multi_conv1, self.pool, self.multi_conv2,
+                       self.pool, self.conv8, self.pool, self.conv9, self.pool, self.dropout2d]
 

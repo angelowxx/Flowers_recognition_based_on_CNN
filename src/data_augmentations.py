@@ -1,6 +1,5 @@
 import torch
 from torchvision import transforms
-import random
 
 resize_to_64x64 = transforms.Compose([
     transforms.Resize((64, 64)),
@@ -27,7 +26,7 @@ resize_and_colour_jitter = transforms.Compose([
 
 translation_rotation = transforms.Compose([
     transforms.Resize((64, 64)),
-    transforms.RandomAffine(degrees=180, translate=(0.3, 0.3), shear=25, scale=(0.7, 1.3)),
+    transforms.RandomAffine(degrees=90, translate=(0.3, 0.3), shear=25, scale=(0.7, 1.3)),
     transforms.RandomVerticalFlip(p=0.5),
     transforms.RandomHorizontalFlip(p=0.5),
     transforms.ToTensor()

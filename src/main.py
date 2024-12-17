@@ -1,13 +1,9 @@
 import os
 import argparse
 import logging
-import time
 import numpy as np
 import matplotlib.pyplot as plt
-from tqdm import tqdm
 
-import torch
-import torchvision.transforms as transforms
 from torch.utils.data import DataLoader, Subset, ConcatDataset
 from torchsummary import summary
 from torchvision.datasets import ImageFolder
@@ -85,39 +81,27 @@ def main(data_dir,
     test_loader = DataLoader(test_data, batch_size=128, shuffle=False)
 
     if continue_training:
-        model.load_state_dict(torch.load(os.path.join(os.getcwd(), 'models', 'default_model')))
+        model.load_state_dict(torch.load(os.path.join(os.getcwd(), 'models', exp_name+'_model')))
     else:
-        optimizer = model_optimizer(model.parameters(), lr=0.005)
-        train_model(save_model_str, 7, model, optimizer, ConcatDataset(train_data), test_loader, 7
+        train_model(save_model_str, 3, model, model_optimizer, 0.003, ConcatDataset(train_data), test_loader, 7
                     , 64, train_criterion, device, exp_name, score, 'Pre-training')
 
     data_augmentations = [translation_rotation, resize_and_colour_jitter]
-    augmentation_times = [6, 6]
+    augmentation_times = [5, 5]
 
     augmentation_types = len(data_augmentations)
-    # model.add_dropout()
     for i in range(augmentation_types):
         data_augmentation = data_augmentations[i]
         augmentation_time = augmentation_times[i]
         train_data = [ImageFolder(os.path.join(data_dir, 'train'), transform=data_augmentation) for i in
                       range(augmentation_time)] + train_data
+        train_data = [ImageFolder(os.path.join(data_dir, 'val'), transform=data_augmentation) for i in
+                      range(augmentation_time)] + train_data
 
     info = 'Training'
+    train_model(save_model_str, 10, model, model_optimizer, 0.005, ConcatDataset(train_data), test_loader, 7
+                , 512, train_criterion, device, exp_name, score, info)
 
-    optimizer = model_optimizer(model.parameters(), lr=0.006)
-    train_model(save_model_str, 7, model, optimizer, ConcatDataset(train_data), test_loader, 7
-                , 512, train_criterion, device, 'augmented', score, info)
-
-    """model.freeze_all_parameters()
-    for i in range(2):
-        info = 'Training single layer [{}/{}]'.format(i+1, 2)
-        model.step()
-        learning_rate = 0.0001
-        optimizer = model_optimizer(model.parameters(), lr=learning_rate)
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=2)
-        train_model(save_model_str, 10, model, scheduler, optimizer
-                    , train_criterion, train_loader, device
-                    , use_all_data_to_train, val_loader, exp_name+'_fine_tuning', score, info)"""
 
     logging.info('Accuracy at each epoch: ' + str(score))
     logging.info('Mean of accuracies across all epochs: ' + str(100 * np.mean(score)) + '%')
@@ -146,7 +130,7 @@ if __name__ == '__main__':
     cmdline_parser = argparse.ArgumentParser('DL WS24/25 Competition')
 
     cmdline_parser.add_argument('-m', '--model',
-                                default='HandmadeModel',
+                                default='FastCNN',
                                 help='Class name of model to train',
                                 type=str)
     cmdline_parser.add_argument('-b', '--batch_size',
@@ -176,7 +160,7 @@ if __name__ == '__main__':
                                 choices=['INFO', 'DEBUG'],
                                 help='verbosity')
     cmdline_parser.add_argument('-n', '--exp_name',
-                                default='default',
+                                default='augmented',
                                 help='Name of this experiment',
                                 type=str)
     cmdline_parser.add_argument('-c', '--continue_training',

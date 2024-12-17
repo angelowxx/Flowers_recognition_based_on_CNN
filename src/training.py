@@ -11,7 +11,7 @@ import time
 from src.eval.evaluate import AverageMeter, accuracy, eval_fn
 
 
-def train_model(save_model_str, num_epochs, model, optimizer, train_data, test_loader, folds
+def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_data, test_loader, folds
                 , batch_size, train_criterion, device, exp_name, score, info):
     if save_model_str:
         # Save the model checkpoint can be restored via "model = torch.load(save_model_str)"
@@ -24,10 +24,16 @@ def train_model(save_model_str, num_epochs, model, optimizer, train_data, test_l
 
     kfold = KFold(n_splits=folds, shuffle=True, random_state=42)
 
+    optimizer = model_optimizer(model.parameters(), lr=lr)
+
     scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer=optimizer, T_0=num_epochs, T_mult=2)
 
     for fold, (train_idx, val_idx) in enumerate(kfold.split(train_data)):
 
+        if fold == 3:
+            optimizer = model_optimizer(model.parameters(), lr=lr/4)
+            scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer=optimizer, T_0=num_epochs*4,
+                                                                             T_mult=2)
         train_subset = Subset(train_data, train_idx)
         val_subset = Subset(train_data, val_idx)
 
@@ -54,13 +60,13 @@ def train_model(save_model_str, num_epochs, model, optimizer, train_data, test_l
             logging.info('Test accuracy: %f', test_score)
             score.append(test_score)
 
-            if pre_val_score < val_score or val_score > train_score:
+            if pre_val_score < val_score:
                 de_cnt = 0
             else:
                 de_cnt += 1
             pre_val_score = val_score
 
-            if de_cnt >= 2 or train_score > 0.98:
+            if de_cnt >= 2:
                 logging.info('#' * 20 + 'early stop!' + '#' * 19)
                 for i in range(num_epochs-epoch-1):
                     scheduler.step()
