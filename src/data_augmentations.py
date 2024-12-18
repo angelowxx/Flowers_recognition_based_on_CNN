@@ -35,7 +35,7 @@ resize_and_colour_jitter = transforms.Compose([
 
 translation_rotation = transforms.Compose([
     transforms.Resize((128, 128)),
-    transforms.RandomAffine(degrees=90, translate=(0.3, 0.3), shear=25, scale=(0.7, 1.3)),
+    transforms.RandomAffine(degrees=90, translate=(0.3, 0.3), shear=30, scale=(0.7, 1.3)),
     transforms.RandomVerticalFlip(p=0.5),
     transforms.RandomHorizontalFlip(p=0.5),
     transforms.ToTensor(),
