@@ -23,17 +23,20 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
         save_model_str = os.path.join(model_save_dir, exp_name + '_model')
 
     kfold = KFold(n_splits=folds, shuffle=True, random_state=42)
-
-    optimizer = model_optimizer(model.parameters(), lr=lr)
-
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer=optimizer, T_0=num_epochs, T_mult=2)
+    lrs = []
+    val_scores = []
+    factor = 1/lr
 
     for fold, (train_idx, val_idx) in enumerate(kfold.split(train_data)):
 
-        if fold == 3:
-            optimizer = model_optimizer(model.parameters(), lr=lr/2)
-            scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer=optimizer, T_0=num_epochs*4,
-                                                                             T_mult=2)
+        optimizer = model_optimizer(model.parameters(), lr=lr)
+        lr *= 0.6
+
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
+            optimizer=optimizer,
+            T_0=num_epochs,
+            T_mult=2
+        )
         train_subset = Subset(train_data, train_idx)
         val_subset = Subset(train_data, val_idx)
 
