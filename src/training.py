@@ -77,7 +77,7 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
                 de_cnt += 1
             pre_val_score = val_score
 
-            if de_cnt >= 3:
+            if de_cnt >= 3 or train_score > 0.98:
                 logging.info('#' * 20 + 'early stop!' + '#' * 19)
                 break
     plt.figure(0)
@@ -92,7 +92,13 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
 
     plt.xlabel('epochs')
     plt.legend()
-    plt.show()
+
+    save_fig_dir = os.path.join(os.getcwd(), 'figures')
+    if not os.path.exists(save_fig_dir):
+        os.mkdir(save_fig_dir)
+    save_fig_dir = os.path.join(save_fig_dir, exp_name + '_fig' + ".png")
+    plt.savefig(save_fig_dir)
+
     torch.save(model.state_dict(), save_model_str)
 
 def train_fn(model, optimizer, criterion, train_loader, device):
