@@ -2,6 +2,7 @@ import logging
 import os
 
 import torch
+from matplotlib import pyplot as plt
 from sklearn.model_selection import KFold
 from torch.utils.data import Subset, DataLoader
 from tqdm import tqdm
@@ -25,6 +26,8 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
     kfold = KFold(n_splits=folds, shuffle=True, random_state=42)
     lrs = []
     val_scores = []
+    divides = []
+    e = 0
     factor = 1/lr
 
     for fold, (train_idx, val_idx) in enumerate(kfold.split(train_data)):
@@ -46,7 +49,9 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
         # Train the model
         pre_val_score = 0
         de_cnt = 0
+        divides.append(e)
         for epoch in range(num_epochs):
+            lrs.append(scheduler.get_last_lr()[0])
             logging.info('#' * 50)
             logging.info(info)
             logging.info('Fold [{}/{}]'.format(fold + 1, folds))
@@ -58,10 +63,13 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
 
             val_score = eval_fn(model, val_loader, device)
             logging.info('Validation accuracy: %f', val_score)
+            val_scores.append(val_score)
 
             test_score = eval_fn(model, test_loader, device)
             logging.info('Test accuracy: %f', test_score)
             score.append(test_score)
+
+            e += 1
 
             if pre_val_score < val_score:
                 de_cnt = 0
@@ -69,12 +77,22 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
                 de_cnt += 1
             pre_val_score = val_score
 
-            if de_cnt >= 2:
+            if de_cnt >= 3:
                 logging.info('#' * 20 + 'early stop!' + '#' * 19)
-                for i in range(num_epochs-epoch-1):
-                    scheduler.step()
                 break
+    plt.figure(0)
 
+    plt.plot([lr * factor for lr in lrs], color='red', label='learning rate', linestyle='-')
+    plt.plot(score, color='green', label='test score', linestyle='-')
+    plt.plot(val_scores, color='blue', label='validation score', linestyle='-')
+
+    for pos in divides:
+        plt.axvline(x=pos, color='black', linestyle='--')
+        plt.text(pos, 0, str(pos), color='black', ha='center', va='bottom')  # Add label at the bottom
+
+    plt.xlabel('epochs')
+    plt.legend()
+    plt.show()
     torch.save(model.state_dict(), save_model_str)
 
 def train_fn(model, optimizer, criterion, train_loader, device):

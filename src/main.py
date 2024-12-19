@@ -82,14 +82,12 @@ def main(data_dir,
 
     if continue_training:
         model.load_state_dict(torch.load(os.path.join(os.getcwd(), 'models', exp_name+'_model')))
-    # else:
-        # train_model(save_model_str, 3, model, model_optimizer, 0.003, ConcatDataset(train_data), test_loader, 7
-        #             , 64, train_criterion, device, 'pre-trained', score, 'Pre-training')
+    else:
+        train_model(save_model_str, 15, model, model_optimizer, 0.003, ConcatDataset(train_data), test_loader, 5
+                    , batch_size, train_criterion, device, 'pre-trained', score, 'Pre-training')
 
-    """data_augmentations = [translation_rotation, resize_and_colour_jitter]
-    augmentation_times = [5, 5]"""
-    data_augmentations = [data_augmentation_pipline]
-    augmentation_times = [5]
+    data_augmentations = [translation_rotation, resize_and_colour_jitter]
+    augmentation_times = [5, 5]
 
     augmentation_types = len(data_augmentations)
     for i in range(augmentation_types):
@@ -101,8 +99,8 @@ def main(data_dir,
                       range(augmentation_time)] + train_data
 
     info = 'Training'
-    train_model(save_model_str, 10, model, model_optimizer, 0.005, ConcatDataset(train_data), test_loader, 7
-                , 512, train_criterion, device, exp_name, score, info)
+    train_model(save_model_str, 15, model, model_optimizer, 0.005, ConcatDataset(train_data), test_loader, 5
+                , batch_size * 10, train_criterion, device, exp_name, score, info)
 
 
     logging.info('Accuracy at each epoch: ' + str(score))
