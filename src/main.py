@@ -160,7 +160,7 @@ if __name__ == '__main__':
                                 choices=['INFO', 'DEBUG'],
                                 help='verbosity')
     cmdline_parser.add_argument('-n', '--exp_name',
-                                default='augmented',
+                                default='fast',
                                 help='Name of this experiment',
                                 type=str)
     cmdline_parser.add_argument('-c', '--continue_training',
