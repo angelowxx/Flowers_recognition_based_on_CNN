@@ -7,7 +7,6 @@ normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 
 resize_to_64x64 = transforms.Compose([
     transforms.Resize((64, 64)),
     transforms.ToTensor(),
-    normalize
 ])
 
 resize_to_128x128 = transforms.Compose([
@@ -27,7 +26,7 @@ add_noise = transforms.Compose([
 ])
 
 resize_and_colour_jitter = transforms.Compose([
-    transforms.Resize((128, 128)),
+    transforms.Resize((256, 256)),
     transforms.ColorJitter(brightness=0.5, contrast=0.3, saturation=0.3, hue=0.1),
     transforms.ToTensor(),
 ])
@@ -60,11 +59,10 @@ cropping_img = transforms.Compose([
 ])
 
 data_augmentation_pipline = transforms.Compose([
-    transforms.Resize(size=(192, 192)),
-    transforms.RandomAffine(degrees=(0, 90), translate=(0.3, 0.3), shear=30, scale=(0.7, 1.3)),  #
+    transforms.RandomAffine(degrees=(-90, 90), translate=(0.2, 0.2), shear=20, scale=(0.8, 1.2)),  #
+    transforms.Resize(size=(128, 128)),
     transforms.RandomVerticalFlip(p=0.5),
     transforms.RandomHorizontalFlip(p=0.5),
-    transforms.RandomCrop(size=(128, 128)),
     transforms.ToTensor(),
 ])
 

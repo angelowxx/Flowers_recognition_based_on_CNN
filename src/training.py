@@ -30,16 +30,20 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
     e = 0
     factor = 1/lr
 
+    optimizer = model_optimizer(
+        model.parameters(),
+        lr=lr,
+        weight_decay=1e-4,
+    )
+
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
+        optimizer=optimizer,
+        T_0=5,
+        T_mult=2,
+    )
+
     for fold, (train_idx, val_idx) in enumerate(kfold.split(train_data)):
 
-        optimizer = model_optimizer(model.parameters(), lr=lr)
-        lr *= 0.6
-
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
-            optimizer=optimizer,
-            T_0=num_epochs,
-            T_mult=2
-        )
         train_subset = Subset(train_data, train_idx)
         val_subset = Subset(train_data, val_idx)
 
@@ -98,6 +102,7 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
         os.mkdir(save_fig_dir)
     save_fig_dir = os.path.join(save_fig_dir, exp_name + '_fig' + ".png")
     plt.savefig(save_fig_dir)
+    plt.close()
 
     torch.save(model.state_dict(), save_model_str)
 

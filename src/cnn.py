@@ -9,6 +9,7 @@ class SampleModel(nn.Module):
     """
     A sample PyTorch CNN model
     """
+
     def __init__(self, input_shape=(3, 64, 64), num_classes=17):
         super(SampleModel, self).__init__()
         self.conv1 = nn.Conv2d(in_channels=input_shape[0], out_channels=10, kernel_size=(3, 3), padding=(1, 1))
@@ -62,7 +63,6 @@ class HomemadeModel(nn.Module):
         x = self.conv4(x)
         x = self.pool(x)
 
-
         x = x.view(x.size(0), -1)
         x = self.fc1(x)
         # x = self.dropout(x)
@@ -89,83 +89,49 @@ class HomemadeModel(nn.Module):
 
 
 class FastCNN(nn.Module):
-    def __init__(self, input_shape=(3, 128, 128), num_classes=17, num_filters=32):
+    def __init__(self, input_shape=(3, 128, 128), num_classes=17):
         super(FastCNN, self).__init__()
         self.normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        self.model = nn.Sequential(
-            nn.Conv2d(in_channels=input_shape[0], out_channels=num_filters, kernel_size=5, padding=2, padding_mode='reflect'),
-            nn.BatchNorm2d(num_features=num_filters),
-            nn.MaxPool2d(3, stride=3),
+        self.CNN = nn.Sequential(
+            nn.Conv2d(in_channels=input_shape[0], out_channels=30, kernel_size=7),
+            nn.BatchNorm2d(num_features=30),
+            nn.MaxPool2d(5, stride=3),
+            nn.Sigmoid(),
+
+            nn.Conv2d(in_channels=30, out_channels=40, kernel_size=5),
+            nn.BatchNorm2d(num_features=40),
+            nn.MaxPool2d(3, stride=2),
+            nn.Sigmoid(),
+            nn.Dropout2d(p=0.2),
+
+            nn.Conv2d(in_channels=40, out_channels=50, kernel_size=4),
+            nn.BatchNorm2d(num_features=50),
+            nn.MaxPool2d(3, stride=2),
+            nn.Sigmoid(),
+            nn.Dropout2d(p=0.2),
+
+            nn.Conv2d(in_channels=50, out_channels=70, kernel_size=3),
+            nn.BatchNorm2d(num_features=70),
+            nn.MaxPool2d(3, stride=2),
+            nn.Sigmoid(),
+
         )
-        self.conv1 = nn.Conv2d(in_channels=input_shape[0], out_channels=20, kernel_size=(3, 3), padding=(1, 1))
 
-        self.conv2 = nn.Conv2d(in_channels=20, out_channels=15, kernel_size=(3, 3), padding=(1, 1))
-        self.conv3 = nn.Conv2d(in_channels=20, out_channels=10, kernel_size=(3, 3), padding=(2, 2), dilation=2)
-        self.conv4 = nn.Conv2d(in_channels=20, out_channels=6, kernel_size=(3, 3), padding=(3, 3), dilation=3)
-
-        self.conv5 = nn.Conv2d(in_channels=31, out_channels=18, kernel_size=(3, 3), padding=(1, 1))
-        self.conv6 = nn.Conv2d(in_channels=31, out_channels=14, kernel_size=(3, 3), padding=(2, 2), dilation=2)
-        self.conv7 = nn.Conv2d(in_channels=31, out_channels=8, kernel_size=(3, 3), padding=(3, 3), dilation=3)
-
-        self.conv8 = nn.Conv2d(in_channels=40, out_channels=65, kernel_size=(3, 3), padding=(1, 1))
-        self.conv9 = nn.Conv2d(in_channels=65, out_channels=80, kernel_size=(3, 3), padding=(1, 1))
-        self.pool = nn.MaxPool2d(3, stride=2)
-        # The input features for the linear layer depends on the size of the input to the convolutional layer
-        # So if you resize your image in data augmentations, you'll have to tweak this too.
-        self.fc2 = nn.Linear(in_features=720, out_features=num_classes)
-
-        self.dropout = nn.Dropout(p=0.2)
-        self.dropout2d = nn.Dropout2d(p=0.2)
-
-        self.layers = [self.normalize, self.conv1, self.pool, self.multi_conv1, self.pool, self.multi_conv2,
-                       self.pool, self.conv8, self.pool, self.conv9, self.pool, self.dropout2d]
+        self.Linear = nn.Sequential(
+            nn.Linear(in_features=70, out_features=num_classes),
+            # nn.LeakyReLU(),
+            # nn.Softmax(dim=1)
+            nn.LogSoftmax(dim=1)
+        )
 
     def forward(self, x):
-
-        for fn in self.layers:
-            x = fn(x)
+        x = self.normalize(x)
+        x = self.CNN(x)
 
         x = x.view(x.size(0), -1)
-        x = self.fc2(x)
-        x = F.leaky_relu(x)
+        x = self.Linear(x)
 
         return x
-
-    def multi_conv1(self, x):
-        x1 = self.conv2(x)
-        x2 = self.conv3(x)
-        x3 = self.conv4(x)
-
-        x = torch.cat((x1, x2, x3), dim=1)
-        return x
-
-    def multi_conv2(self, x):
-        x1 = self.conv5(x)
-        x2 = self.conv6(x)
-        x3 = self.conv7(x)
-
-        x = torch.cat((x1, x2, x3), dim=1)
-        return x
-
-    def freeze_convolution_layers(self):
-        for param in self.parameters():
-            param.requires_grad = False
-        for param in self.fc2.parameters():
-            param.requires_grad = True
-
-    def freeze_linear_layers(self):
-        for param in self.parameters():
-            param.requires_grad = True
-        for param in self.fc2.parameters():
-            param.requires_grad = False
-
-    def cancel_dropout(self):
-        self.layers = [self.conv1, self.pool, self.multi_conv1, self.pool, self.multi_conv2,
-                       self.pool, self.conv8, self.pool, self.conv9, self.pool]
-
-    def set_dropout(self):
-        self.layers = [self.conv1, self.pool, self.multi_conv1, self.pool, self.multi_conv2,
-                       self.pool, self.conv8, self.pool, self.conv9, self.pool, self.dropout2d]
 
 
 class LargeCNN(nn.Module):
@@ -240,4 +206,3 @@ class LargeCNN(nn.Module):
     def set_dropout(self):
         self.layers = [self.conv1, self.pool, self.multi_conv1, self.pool, self.multi_conv2,
                        self.pool, self.conv8, self.pool, self.conv9, self.pool, self.dropout2d]
-

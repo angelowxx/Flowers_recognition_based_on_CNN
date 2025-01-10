@@ -21,7 +21,8 @@ def main(data_dir,
          model_optimizer=torch.optim.Adam,
          save_model_str=None,
          exp_name='',
-         continue_training=False):
+         continue_training=False,
+         train_with_all_data=False):
     """
     Training loop for configurableNet.
     :param torch_model: model that we are training
@@ -66,7 +67,6 @@ def main(data_dir,
 
     # instantiate training criterion
     train_criterion = train_criterion().to(device)
-    score = []
 
     model = torch_model(input_shape=input_shape,
                         num_classes=len(train_data.classes)).to(device)
@@ -76,18 +76,22 @@ def main(data_dir,
     logging.info('Model being trained:')
     summary(model, input_shape,
             device='cuda' if torch.cuda.is_available() else 'cpu')
-
-    train_data = [train_data, val_data]
+    if train_with_all_data:
+        train_data = [train_data, val_data, test_data]
+    else:
+        train_data = [train_data, val_data]
     test_loader = DataLoader(test_data, batch_size=128, shuffle=False)
 
     if continue_training:
+        logging.info('loading model state dict!!')
         model.load_state_dict(torch.load(os.path.join(os.getcwd(), 'models', exp_name+'_model')))
     else:
-        train_model(save_model_str, 15, model, model_optimizer, 0.003, ConcatDataset(train_data), test_loader, 5
+        score = []
+        train_model(save_model_str, 15, model, model_optimizer, 0.01, ConcatDataset(train_data), test_loader, 5
                     , batch_size, train_criterion, device, 'pre-trained', score, 'Pre-training')
 
-    data_augmentations = [translation_rotation, resize_and_colour_jitter]
-    augmentation_times = [5, 5]
+    data_augmentations = [data_augmentation_pipline]
+    augmentation_times = [2]
 
     augmentation_types = len(data_augmentations)
     for i in range(augmentation_types):
@@ -97,25 +101,19 @@ def main(data_dir,
                       range(augmentation_time)] + train_data
         train_data = [ImageFolder(os.path.join(data_dir, 'val'), transform=data_augmentation) for i in
                       range(augmentation_time)] + train_data
+        if train_with_all_data:
+            train_data = [ImageFolder(os.path.join(data_dir, 'test'), transform=data_augmentation) for i in
+                          range(augmentation_time)] + train_data
 
     info = 'Training'
-    train_model(save_model_str, 15, model, model_optimizer, 0.005, ConcatDataset(train_data), test_loader, 5
-                , batch_size * 10, train_criterion, device, exp_name, score, info)
+    score = []
+    train_model(save_model_str, 31, model, model_optimizer, 0.005, ConcatDataset(train_data), test_loader, 5
+                , batch_size*3, train_criterion, device, exp_name, score, info)
 
 
     logging.info('Accuracy at each epoch: ' + str(score))
     logging.info('Mean of accuracies across all epochs: ' + str(100 * np.mean(score)) + '%')
     logging.info('Accuracy of model at final epoch: ' + str(100 * score[-1]) + '%')
-
-    plt.plot(score)
-    plt.xlabel('epochs')
-    plt.ylabel('score')
-    save_fig_dir = os.path.join(os.getcwd(), 'figures')
-
-    if not os.path.exists(save_fig_dir):
-        os.mkdir(save_fig_dir)
-    save_fig_dir = os.path.join(save_fig_dir, 'fig_score' + ".png")
-    plt.savefig(save_fig_dir)
 
 
 if __name__ == '__main__':
@@ -124,7 +122,7 @@ if __name__ == '__main__':
 
     Feel free to add or remove more arguments, change default values or hardcode parameters to use.
     """
-    loss_dict = {'cross_entropy': torch.nn.CrossEntropyLoss}  # Feel free to add more
+    loss_dict = {'cross_entropy': torch.nn.CrossEntropyLoss, "nll_loss": torch.nn.NLLLoss}  # Feel free to add more
     opti_dict = {'sgd': torch.optim.SGD, 'adam': torch.optim.Adam}  # Feel free to add more
 
     cmdline_parser = argparse.ArgumentParser('DL WS24/25 Competition')
@@ -134,7 +132,7 @@ if __name__ == '__main__':
                                 help='Class name of model to train',
                                 type=str)
     cmdline_parser.add_argument('-b', '--batch_size',
-                                default=282,
+                                default=32,
                                 help='Batch size',
                                 type=int)
     cmdline_parser.add_argument('-D', '--data_dir',
@@ -142,7 +140,7 @@ if __name__ == '__main__':
                                                      '..', 'dataset'),
                                 help='Directory in which the data is stored (can be downloaded)')
     cmdline_parser.add_argument('-L', '--training_loss',
-                                default='cross_entropy',
+                                default='nll_loss',
                                 help='Which loss to use during training',
                                 choices=list(loss_dict.keys()),
                                 type=str)
@@ -166,6 +164,9 @@ if __name__ == '__main__':
     cmdline_parser.add_argument('-c', '--continue_training',
                                 action='store_true',
                                 help='continue training the existing model.')
+    cmdline_parser.add_argument('-a', '--train_with_all_data',
+                                action='store_true',
+                                help='train with all data.')
 
     args, unknowns = cmdline_parser.parse_known_args()
     log_lvl = logging.INFO if args.verbose == 'INFO' else logging.DEBUG
@@ -184,5 +185,6 @@ if __name__ == '__main__':
         model_optimizer=opti_dict[args.optimizer],
         save_model_str=args.model_path,
         exp_name=args.exp_name,
-        continue_training=args.continue_training
+        continue_training=args.continue_training,
+        train_with_all_data=args.train_with_all_data
     )
