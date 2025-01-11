@@ -87,7 +87,7 @@ def main(data_dir,
         model.load_state_dict(torch.load(os.path.join(os.getcwd(), 'models', exp_name+'_model')))
     else:
         score = []
-        train_model(save_model_str, 15, model, model_optimizer, 0.01, ConcatDataset(train_data), test_loader, 5
+        train_model(save_model_str, 15, model, model_optimizer, 0.01, ConcatDataset(train_data), test_loader, 6
                     , batch_size, train_criterion, device, 'pre-trained', score, 'Pre-training')
 
     data_augmentations = [data_augmentation_pipline]
@@ -107,7 +107,7 @@ def main(data_dir,
 
     info = 'Training'
     score = []
-    train_model(save_model_str, 31, model, model_optimizer, 0.005, ConcatDataset(train_data), test_loader, 5
+    train_model(save_model_str, 20, model, model_optimizer, 0.005, ConcatDataset(train_data), test_loader, 6
                 , batch_size*3, train_criterion, device, exp_name, score, info)
 
 

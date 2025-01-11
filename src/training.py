@@ -30,19 +30,21 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
     e = 0
     factor = 1/lr
 
-    optimizer = model_optimizer(
-        model.parameters(),
-        lr=lr,
-        weight_decay=1e-4,
-    )
-
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
-        optimizer=optimizer,
-        T_0=5,
-        T_mult=2,
-    )
-
     for fold, (train_idx, val_idx) in enumerate(kfold.split(train_data)):
+
+        optimizer = model_optimizer(
+            model.parameters(),
+            lr=lr,
+            weight_decay=1e-4,
+        )
+
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
+            optimizer=optimizer,
+            T_0=num_epochs * 2,
+            T_mult=2,
+        )
+
+        lr *= 0.6
 
         train_subset = Subset(train_data, train_idx)
         val_subset = Subset(train_data, val_idx)
@@ -79,6 +81,7 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
                 de_cnt = 0
             else:
                 de_cnt += 1
+                scheduler.step()
             pre_val_score = val_score
 
             if de_cnt >= 3 or train_score > 0.98:
