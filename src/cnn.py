@@ -93,34 +93,32 @@ class FastCNN(nn.Module):
         super(FastCNN, self).__init__()
         self.normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         self.CNN = nn.Sequential(
-            nn.Conv2d(in_channels=input_shape[0], out_channels=30, kernel_size=7),
-            nn.BatchNorm2d(num_features=30),
+            nn.Conv2d(in_channels=input_shape[0], out_channels=25, kernel_size=7),
+            nn.BatchNorm2d(num_features=25),
             nn.MaxPool2d(5, stride=3),
-            nn.Sigmoid(),
+            nn.Tanh(),
+            nn.Dropout2d(p=0.1),
 
-            nn.Conv2d(in_channels=30, out_channels=40, kernel_size=5),
+            nn.Conv2d(in_channels=25, out_channels=40, kernel_size=5),
             nn.BatchNorm2d(num_features=40),
-            nn.MaxPool2d(3, stride=2),
-            nn.Sigmoid(),
+            nn.MaxPool2d(5, stride=3),
+            nn.Tanh(),
             nn.Dropout2d(p=0.2),
 
-            nn.Conv2d(in_channels=40, out_channels=50, kernel_size=4),
-            nn.BatchNorm2d(num_features=50),
-            nn.MaxPool2d(3, stride=2),
-            nn.Sigmoid(),
-            nn.Dropout2d(p=0.2),
-
-            nn.Conv2d(in_channels=50, out_channels=70, kernel_size=3),
-            nn.BatchNorm2d(num_features=70),
-            nn.MaxPool2d(3, stride=2),
-            nn.Sigmoid(),
+            nn.Conv2d(in_channels=40, out_channels=80, kernel_size=4),
+            nn.BatchNorm2d(num_features=80),
+            nn.MaxPool2d(5, stride=3),
+            nn.Tanh(),
+            nn.Dropout2d(p=0.4),
 
         )
 
         self.Linear = nn.Sequential(
-            nn.Linear(in_features=70, out_features=num_classes),
-            # nn.LeakyReLU(),
-            # nn.Softmax(dim=1)
+            nn.Linear(in_features=320, out_features=56),
+            nn.BatchNorm1d(num_features=56),
+            nn.Dropout(p=0.2),
+
+            nn.Linear(in_features=56, out_features=num_classes),
             nn.LogSoftmax(dim=1)
         )
 

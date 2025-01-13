@@ -44,7 +44,7 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
             T_mult=2,
         )
 
-        lr *= 0.6
+        lr *= 0.5
 
         train_subset = Subset(train_data, train_idx)
         val_subset = Subset(train_data, val_idx)
@@ -53,7 +53,8 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
         val_loader = DataLoader(val_subset, batch_size=batch_size, shuffle=False)
 
         # Train the model
-        pre_val_score = 0
+        pre_loss = 5
+        min_val_loss = 2/(fold+1)
         de_cnt = 0
         divides.append(e)
         for epoch in range(num_epochs):
@@ -65,27 +66,31 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
 
             train_score, train_loss = train_fn(model, optimizer, train_criterion, train_loader, device)
             scheduler.step()
-            logging.info('Train accuracy: %f', train_score)
+            logging.info('Training accuracy: %f', train_score)
 
-            val_score = eval_fn(model, val_loader, device)
+            val_score, val_loss = eval_model(model, train_criterion, val_loader, device, 'Validation')
             logging.info('Validation accuracy: %f', val_score)
             val_scores.append(val_score)
 
-            test_score = eval_fn(model, test_loader, device)
+            test_score, test_loss = eval_model(model, train_criterion, test_loader, device, 'Test')
             logging.info('Test accuracy: %f', test_score)
             score.append(test_score)
 
             e += 1
 
-            if pre_val_score < val_score:
+            if min_val_loss >= val_loss:
                 de_cnt = 0
+                min_val_loss = val_loss * 0.4 + min_val_loss * 0.6
             else:
                 de_cnt += 1
-                scheduler.step()
-            pre_val_score = val_score
 
-            if de_cnt >= 3 or train_score > 0.98:
-                logging.info('#' * 20 + 'early stop!' + '#' * 19)
+            if pre_loss < train_loss * 1.05:
+                scheduler.step()
+
+            pre_loss = train_loss
+
+            if de_cnt > 3:
+                logging.info('#' * 19 + 'early stop!!' + '#' * 19)
                 break
     plt.figure(0)
 
@@ -109,21 +114,20 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
 
     torch.save(model.state_dict(), save_model_str)
 
+
 def train_fn(model, optimizer, criterion, train_loader, device):
     """
   Training method
   :param model: model to train
   :param optimizer: optimization algorithm
   :param criterion: loss function
-  :param loader: data loader for either training or testing set
+  :param train_loader: data loader for either training or testing set
   :param device: torch device
   :return: (accuracy, loss) on the data
   """
-    time_begin = time.time()
     score = AverageMeter()
     losses = AverageMeter()
     model.train()
-    time_train = 0
 
     t = tqdm(train_loader)
     for images, labels in t:
@@ -143,7 +147,27 @@ def train_fn(model, optimizer, criterion, train_loader, device):
 
         t.set_description('(=> Training) Loss: {:.4f}'.format(losses.avg))
 
-    time_train += time.time() - time_begin
-    print('(=> Training) Loss: {:.4f}'.format(losses.avg))
-    print('training time: ' + str(time_train))
+    return score.avg, losses.avg
+
+
+def eval_model(model, criterion, val_loader, device, info):
+    model.eval()
+    losses = AverageMeter()
+    score = AverageMeter()
+    t = tqdm(val_loader)
+    with torch.no_grad():  # no gradient needed
+        for images, labels in t:
+            images = images.to(device)
+            labels = labels.to(device)
+
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+
+            acc = accuracy(outputs, labels)
+            n = images.size(0)
+            losses.update(loss.item(), n)
+            score.update(acc.item(), n)
+
+            t.set_description('(=> {}) Loss: {:.4f}'.format(info, losses.avg))
+
     return score.avg, losses.avg
