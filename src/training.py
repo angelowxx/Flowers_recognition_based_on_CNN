@@ -54,7 +54,7 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
 
         # Train the model
         pre_loss = 5
-        min_val_loss = 2/(fold+1)
+        min_val_loss = 1.5/(fold+1)
         de_cnt = 0
         divides.append(e)
         for epoch in range(num_epochs):
@@ -80,9 +80,11 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
 
             if min_val_loss >= val_loss:
                 de_cnt = 0
-                min_val_loss = val_loss * 0.4 + min_val_loss * 0.6
+
             else:
                 de_cnt += 1
+
+            min_val_loss = val_loss * 0.5 + min_val_loss * 0.5
 
             if pre_loss < train_loss * 1.05:
                 scheduler.step()

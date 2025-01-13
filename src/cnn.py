@@ -119,6 +119,7 @@ class FastCNN(nn.Module):
             nn.Dropout(p=0.2),
 
             nn.Linear(in_features=56, out_features=num_classes),
+            nn.BatchNorm1d(num_features=num_classes),
             nn.LogSoftmax(dim=1)
         )
 
