@@ -109,7 +109,7 @@ class FastCNN(nn.Module):
             nn.BatchNorm2d(num_features=80),
             nn.MaxPool2d(5, stride=3),
             nn.Tanh(),
-            nn.Dropout2d(p=0.4),
+            nn.Dropout2d(p=0.5),
 
         )
 
@@ -117,6 +117,7 @@ class FastCNN(nn.Module):
             nn.Linear(in_features=320, out_features=56),
             nn.BatchNorm1d(num_features=56),
             nn.Dropout(p=0.2),
+            nn.LeakyReLU(),
 
             nn.Linear(in_features=56, out_features=num_classes),
             nn.BatchNorm1d(num_features=num_classes),
