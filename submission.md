@@ -10,7 +10,7 @@ Fast Networks Track - I have applied data augmentation, cross validation, early 
 Large Networks Track - N/A
 
 ##### Command to train your model from scratch
-Fast Networks Track - python -m src.main -m FastCNN
+Fast Networks Track - python -m src.main -m FastCNN -a
 Large Networks Track - N/A
 
 ##### Command to evaluate your model

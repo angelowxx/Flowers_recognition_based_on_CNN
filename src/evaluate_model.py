@@ -23,7 +23,7 @@ if __name__ == '__main__':
                         type=str)
 
     parser.add_argument('-D', '--test-data-dir',
-                        default=os.path.join(os.getcwd(), 'dataset', 'new_test'),
+                        default=os.path.join(os.getcwd(), 'dataset', 'test'),
                         help='Path to folder with the test data to evaluate the model on.'
                         + 'The organizers will populate the test folder with the unseen dataset to evaluate your model.'
                         )
