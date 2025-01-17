@@ -58,7 +58,7 @@ def main(data_dir,
     # Load the dataset
     train_data = ImageFolder(os.path.join(data_dir, 'train'), transform=base_transform)
     val_data = ImageFolder(os.path.join(data_dir, 'val'), transform=base_transform)
-    test_data = ImageFolder(os.path.join(data_dir, 'test'), transform=base_transform)
+    test_data = ImageFolder(os.path.join(data_dir, 'new_test'), transform=base_transform)
 
     channels, img_height, img_width = train_data[0][0].shape
 
@@ -103,7 +103,7 @@ def main(data_dir,
 
     info = 'Training'
     score = []
-    train_model(save_model_str, 35, model, model_optimizer, 0.01, ConcatDataset(train_data), test_loader, 5
+    train_model(save_model_str, 28, model, model_optimizer, 0.01, ConcatDataset(train_data), test_loader, 5
                 , batch_size*3, train_criterion, device, exp_name, score, info)
 
 

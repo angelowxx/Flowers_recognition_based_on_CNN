@@ -85,7 +85,7 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
 
             if min_val_loss >= val_loss:
                 de_cnt = 0
-                min_val_loss = val_loss * 0.5 + min_val_loss * 0.5
+                min_val_loss = val_loss * 0.3 + min_val_loss * 0.7
 
             else:
                 de_cnt += 1

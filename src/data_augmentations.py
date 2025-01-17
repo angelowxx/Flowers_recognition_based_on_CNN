@@ -27,7 +27,7 @@ class RepeatImageTransform:
         """
         # Define the integers and their corresponding probabilities
         integers = [1, 2, 3]
-        probabilities = [0.7, 0.2, 0.1]  # Probabilities must sum to 1
+        probabilities = [0.6, 0.25, 0.15]  # Probabilities must sum to 1
 
         # Generate a single random integer
         repeat_h = repeat_w = random.choices(integers, weights=probabilities, k=1)[0]
