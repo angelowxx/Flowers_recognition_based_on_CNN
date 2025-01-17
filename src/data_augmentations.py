@@ -7,7 +7,7 @@ from PIL import Image
 
 
 class RepeatImageTransform:
-    def __init__(self, min_repeat=2, max_repeat=3):
+    def __init__(self, min_repeat=1, max_repeat=3):
         """
         Initialize the RepeatImageTransform.
         Args:
@@ -25,9 +25,12 @@ class RepeatImageTransform:
         Returns:
             PIL.Image: Repeated image.
         """
-        # Randomly decide the repeat factors for height and width
-        repeat_h = random.randint(self.min_repeat, self.max_repeat)
-        repeat_w = random.randint(self.min_repeat, self.max_repeat)
+        # Define the integers and their corresponding probabilities
+        integers = [1, 2, 3]
+        probabilities = [0.7, 0.2, 0.1]  # Probabilities must sum to 1
+
+        # Generate a single random integer
+        repeat_h = repeat_w = random.choices(integers, weights=probabilities, k=1)[0]
 
         # Get original dimensions of the image
         width, height = img.size

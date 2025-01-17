@@ -86,8 +86,8 @@ def main(data_dir,
         logging.info('loading model state dict!!')
         model.load_state_dict(torch.load(os.path.join(os.getcwd(), 'models', 'pre-trained_model')))
 
-    data_augmentations = [data_augmentation_pipline, data_augmentation_pipline_repeated]
-    augmentation_times = [3, 1]
+    data_augmentations = [data_augmentation_pipline_repeated]
+    augmentation_times = [5]
 
     augmentation_types = len(data_augmentations)
     for i in range(augmentation_types):
