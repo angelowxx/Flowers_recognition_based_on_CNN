@@ -1,4 +1,5 @@
 import logging
+import math
 import os
 
 import torch
@@ -13,7 +14,7 @@ from src.eval.evaluate import AverageMeter, accuracy, eval_fn
 
 
 def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_data, test_loader, folds
-                , batch_size, train_criterion, device, exp_name, score, info):
+                , batch_size, train_criterion, device, exp_name, test_losses, info):
     if save_model_str:
         # Save the model checkpoint can be restored via "model = torch.load(save_model_str)"
         model_save_dir = os.path.join(os.getcwd(), save_model_str)
@@ -25,7 +26,7 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
 
     kfold = KFold(n_splits=folds, shuffle=True, random_state=42)
     lrs = []
-    val_scores = []
+    val_losses = []
     divides = []
     e = 0
     factor = 1/lr
@@ -36,11 +37,13 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
             model.parameters(),
             lr=lr,
             weight_decay=1e-4,
+            # momentum=0.9,
+            # nesterov=True,
         )
 
         scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
             optimizer=optimizer,
-            T_0=num_epochs * 2,
+            T_0=math.ceil(num_epochs / 7),
             T_mult=2,
         )
 
@@ -53,8 +56,7 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
         val_loader = DataLoader(val_subset, batch_size=batch_size, shuffle=False)
 
         # Train the model
-        pre_loss = 5
-        min_val_loss = 1.5/(fold+1)
+        min_val_loss = 5
         de_cnt = 0
         divides.append(e)
         for epoch in range(num_epochs):
@@ -70,35 +72,36 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
 
             val_score, val_loss = eval_model(model, train_criterion, val_loader, device, 'Validation')
             logging.info('Validation accuracy: %f', val_score)
-            val_scores.append(val_score)
+            val_losses.append(val_score)
 
             test_score, test_loss = eval_model(model, train_criterion, test_loader, device, 'Test')
             logging.info('Test accuracy: %f', test_score)
-            score.append(test_score)
+            test_losses.append(test_score)
 
             e += 1
 
+            if min_val_loss >= 5 or epoch == math.ceil(num_epochs/7) or epoch == 3*math.ceil(num_epochs/7):
+                min_val_loss = val_loss * 2
+
             if min_val_loss >= val_loss:
                 de_cnt = 0
+                min_val_loss = val_loss * 0.5 + min_val_loss * 0.5
 
             else:
                 de_cnt += 1
-
-            min_val_loss = val_loss * 0.5 + min_val_loss * 0.5
-
-            if pre_loss < train_loss * 1.05:
-                scheduler.step()
-
-            pre_loss = train_loss
+                # min_val_loss = val_loss * 0.2 + min_val_loss * 0.8
 
             if de_cnt > 3:
                 logging.info('#' * 19 + 'early stop!!' + '#' * 19)
                 break
+
+        torch.save(model.state_dict(), save_model_str)
+
     plt.figure(0)
 
     plt.plot([lr * factor for lr in lrs], color='red', label='learning rate', linestyle='-')
-    plt.plot(score, color='green', label='test score', linestyle='-')
-    plt.plot(val_scores, color='blue', label='validation score', linestyle='-')
+    plt.plot(test_losses, color='green', label='test loss', linestyle='-')
+    plt.plot(val_losses, color='blue', label='validation loss', linestyle='-')
 
     for pos in divides:
         plt.axvline(x=pos, color='black', linestyle='--')
@@ -113,8 +116,6 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
     save_fig_dir = os.path.join(save_fig_dir, exp_name + '_fig' + ".png")
     plt.savefig(save_fig_dir)
     plt.close()
-
-    torch.save(model.state_dict(), save_model_str)
 
 
 def train_fn(model, optimizer, criterion, train_loader, device):
