@@ -112,7 +112,7 @@ class FastCNN(nn.Module):
             nn.MaxPool2d(5, stride=3),
             #nn.Tanh(),
             nn.LeakyReLU(),
-            nn.Dropout2d(p=0.2),
+            # nn.Dropout2d(p=0.2),
 
         )
 
