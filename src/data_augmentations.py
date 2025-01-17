@@ -7,7 +7,7 @@ from PIL import Image
 
 
 class RepeatImageTransform:
-    def __init__(self, min_repeat=1, max_repeat=3):
+    def __init__(self, min_repeat=2, max_repeat=3):
         """
         Initialize the RepeatImageTransform.
         Args:
