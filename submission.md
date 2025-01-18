@@ -2,11 +2,11 @@
 Fast Networks Track
 
 ##### What are the number of learnable parameters in your model?
-Fast Networks Track - 99 973
+Fast Networks Track - 99 401
 Large Networks Track - N/A
 
 ##### Briefly describe your approach
-Fast Networks Track - I have applied data augmentation, cross validation, early stop. I also tried to apply multiple convolution kernel in one layer, each with different receptive field to try to learn different spacial feature
+Fast Networks Track - I have applied data augmentation, cross validation, early stop. 
 Large Networks Track - N/A
 
 ##### Command to train your model from scratch
