@@ -14,7 +14,7 @@ from src.eval.evaluate import AverageMeter, accuracy, eval_fn
 
 
 def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_data, test_loader, folds
-                , batch_size, train_criterion, device, exp_name, test_losses, info):
+                , batch_size, train_criterion, device, exp_name, test_scores, info):
     if save_model_str:
         # Save the model checkpoint can be restored via "model = torch.load(save_model_str)"
         model_save_dir = os.path.join(os.getcwd(), save_model_str)
@@ -26,7 +26,7 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
 
     kfold = KFold(n_splits=folds, shuffle=True, random_state=42)
     lrs = []
-    val_losses = []
+    val_scores = []
     divides = []
     e = 0
     factor = 1/lr
@@ -36,7 +36,7 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
         optimizer = model_optimizer(
             model.parameters(),
             lr=lr,
-            weight_decay=1e-4,
+            weight_decay=1e-2,
             # momentum=0.9,
             # nesterov=True,
         )
@@ -72,11 +72,11 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
 
             val_score, val_loss = eval_model(model, train_criterion, val_loader, device, 'Validation')
             logging.info('Validation accuracy: %f', val_score)
-            val_losses.append(val_score)
+            val_scores.append(val_score)
 
             test_score, test_loss = eval_model(model, train_criterion, test_loader, device, 'Test')
             logging.info('Test accuracy: %f', test_score)
-            test_losses.append(test_score)
+            test_scores.append(test_score)
 
             e += 1
 
@@ -85,7 +85,7 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
 
             if min_val_loss >= val_loss:
                 de_cnt = 0
-                min_val_loss = val_loss * 0.3 + min_val_loss * 0.7
+                min_val_loss = val_loss * 0.5 + min_val_loss * 0.5
 
             else:
                 de_cnt += 1
@@ -97,25 +97,25 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
 
         torch.save(model.state_dict(), save_model_str)
 
-    plt.figure(0)
+        plt.figure(0)
 
-    plt.plot([lr * factor for lr in lrs], color='red', label='learning rate', linestyle='-')
-    plt.plot(test_losses, color='green', label='test loss', linestyle='-')
-    plt.plot(val_losses, color='blue', label='validation loss', linestyle='-')
+        plt.plot([lr * factor for lr in lrs], color='red', label='learning rate', linestyle='-')
+        plt.plot(test_scores, color='green', label='test accuracy', linestyle='-')
+        plt.plot(val_scores, color='blue', label='validation accuracy', linestyle='-')
 
-    for pos in divides:
-        plt.axvline(x=pos, color='black', linestyle='--')
-        plt.text(pos, 0, str(pos), color='black', ha='center', va='bottom')  # Add label at the bottom
+        for pos in divides:
+            plt.axvline(x=pos, color='black', linestyle='--')
+            plt.text(pos, 0, str(pos), color='black', ha='center', va='bottom')  # Add label at the bottom
 
-    plt.xlabel('epochs')
-    plt.legend()
+        plt.xlabel('epochs')
+        plt.legend()
 
-    save_fig_dir = os.path.join(os.getcwd(), 'figures')
-    if not os.path.exists(save_fig_dir):
-        os.mkdir(save_fig_dir)
-    save_fig_dir = os.path.join(save_fig_dir, exp_name + '_fig' + ".png")
-    plt.savefig(save_fig_dir)
-    plt.close()
+        save_fig_dir = os.path.join(os.getcwd(), 'figures')
+        if not os.path.exists(save_fig_dir):
+            os.mkdir(save_fig_dir)
+        save_fig_dir = os.path.join(save_fig_dir, exp_name + '_fig' + ".png")
+        plt.savefig(save_fig_dir)
+        plt.close()
 
 
 def train_fn(model, optimizer, criterion, train_loader, device):

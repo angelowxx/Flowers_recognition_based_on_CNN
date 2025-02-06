@@ -3,6 +3,7 @@ import argparse
 import logging
 import numpy as np
 import matplotlib.pyplot as plt
+import torch.optim
 
 from torch.utils.data import DataLoader, Subset, ConcatDataset
 from torchsummary import summary
@@ -103,8 +104,8 @@ def main(data_dir,
 
     info = 'Training'
     score = []
-    train_model(save_model_str, 28, model, model_optimizer, 0.01, ConcatDataset(train_data), test_loader, 5
-                , batch_size*3, train_criterion, device, exp_name, score, info)
+    train_model(save_model_str, 35, model, model_optimizer, 0.01, ConcatDataset(train_data), test_loader, 5
+                , batch_size, train_criterion, device, exp_name, score, info)
 
 
     logging.info('Accuracy at each epoch: ' + str(score))
@@ -119,16 +120,16 @@ if __name__ == '__main__':
     Feel free to add or remove more arguments, change default values or hardcode parameters to use.
     """
     loss_dict = {'cross_entropy': torch.nn.CrossEntropyLoss, "nll_loss": torch.nn.NLLLoss}  # Feel free to add more
-    opti_dict = {'sgd': torch.optim.SGD, 'adam': torch.optim.Adam}  # Feel free to add more
+    opti_dict = {'sgd': torch.optim.SGD, 'adam': torch.optim.Adam, 'adamW': torch.optim.AdamW}  # Feel free to add more
 
     cmdline_parser = argparse.ArgumentParser('DL WS24/25 Competition')
 
     cmdline_parser.add_argument('-m', '--model',
-                                default='FastCNN',
+                                default='MobileNetLike',
                                 help='Class name of model to train',
                                 type=str)
     cmdline_parser.add_argument('-b', '--batch_size',
-                                default=32,
+                                default=256,
                                 help='Batch size',
                                 type=int)
     cmdline_parser.add_argument('-D', '--data_dir',
@@ -141,7 +142,7 @@ if __name__ == '__main__':
                                 choices=list(loss_dict.keys()),
                                 type=str)
     cmdline_parser.add_argument('-o', '--optimizer',
-                                default='adam',
+                                default='adamW',
                                 help='Which optimizer to use during training',
                                 choices=list(opti_dict.keys()),
                                 type=str)
