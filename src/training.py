@@ -5,6 +5,8 @@ import os
 import torch
 from matplotlib import pyplot as plt
 from sklearn.model_selection import KFold
+from torch import nn
+from torch.nn.utils import prune
 from torch.utils.data import Subset, DataLoader
 from tqdm import tqdm
 import time
@@ -83,9 +85,14 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
             if min_val_loss >= 5 or epoch == math.ceil(num_epochs/7) or epoch == 3*math.ceil(num_epochs/7):
                 min_val_loss = val_loss * 2
 
+                for module in model.modules():
+                    if isinstance(module, nn.Conv2d) or isinstance(module, nn.Linear):
+                        prune.l1_unstructured(module, name="weight", amount=0.1)  # Prune 30% weights
+                        prune.remove(module, "weight")  # Make pruning permanent
+
             if min_val_loss >= val_loss:
                 de_cnt = 0
-                min_val_loss = val_loss * 0.5 + min_val_loss * 0.5
+                min_val_loss = val_loss * 0.3 + min_val_loss * 0.7
 
             else:
                 de_cnt += 1
