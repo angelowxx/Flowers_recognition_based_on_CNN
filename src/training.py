@@ -38,7 +38,7 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
         optimizer = model_optimizer(
             model.parameters(),
             lr=lr,
-            weight_decay=1e-2,
+            weight_decay=0.02,
             # momentum=0.9,
             # nesterov=True,
         )
@@ -56,6 +56,11 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
 
         train_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=True)
         val_loader = DataLoader(val_subset, batch_size=batch_size, shuffle=False)
+
+        for module in model.modules():
+            if isinstance(module, nn.Conv2d) or isinstance(module, nn.Linear):
+                prune.l1_unstructured(module, name="weight", amount=0.5 / (fold + 1))  # Prune 30% weights
+                prune.remove(module, "weight")  # Make pruning permanent
 
         # Train the model
         min_val_loss = 5
@@ -84,11 +89,6 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
 
             if min_val_loss >= 5 or epoch == math.ceil(num_epochs/7) or epoch == 3*math.ceil(num_epochs/7):
                 min_val_loss = val_loss * 2
-
-                for module in model.modules():
-                    if isinstance(module, nn.Conv2d) or isinstance(module, nn.Linear):
-                        prune.l1_unstructured(module, name="weight", amount=0.2)  # Prune 30% weights
-                        prune.remove(module, "weight")  # Make pruning permanent
 
             if min_val_loss >= val_loss:
                 de_cnt = 0
