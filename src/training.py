@@ -87,7 +87,7 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
 
                 for module in model.modules():
                     if isinstance(module, nn.Conv2d) or isinstance(module, nn.Linear):
-                        prune.l1_unstructured(module, name="weight", amount=0.1)  # Prune 30% weights
+                        prune.l1_unstructured(module, name="weight", amount=0.2)  # Prune 30% weights
                         prune.remove(module, "weight")  # Make pruning permanent
 
             if min_val_loss >= val_loss:
