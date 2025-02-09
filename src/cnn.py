@@ -93,36 +93,36 @@ class FastCNN(nn.Module):
         super(FastCNN, self).__init__()
         self.normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         self.CNN = nn.Sequential(
-            nn.Conv2d(in_channels=input_shape[0], out_channels=25, kernel_size=7),
-            nn.BatchNorm2d(num_features=25),
-            nn.MaxPool2d(5, stride=3),
-            # nn.Tanh(),
-            nn.LeakyReLU(),
-            # nn.Dropout2d(p=0.1),
+            nn.Conv2d(in_channels=input_shape[0], out_channels=32, kernel_size=9, stride=4
+                      , padding=4, padding_mode='reflect'),
+            nn.BatchNorm2d(num_features=32),
+            nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
+            nn.ReLU(),
+            nn.Dropout2d(p=0.5),
 
-            nn.Conv2d(in_channels=25, out_channels=40, kernel_size=5),
-            nn.BatchNorm2d(num_features=40),
-            nn.MaxPool2d(5, stride=3),
-            # nn.Tanh(),
-            nn.LeakyReLU(),
-            # nn.Dropout2d(p=0.1),
+            nn.Conv2d(in_channels=32, out_channels=60, kernel_size=3, padding=1, padding_mode='reflect'),
+            nn.BatchNorm2d(num_features=60),
+            nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
+            nn.ReLU(),
+            nn.Dropout2d(p=0.5),
 
-            nn.Conv2d(in_channels=40, out_channels=80, kernel_size=4),
-            nn.BatchNorm2d(num_features=80),
-            nn.MaxPool2d(5, stride=3),
-            # nn.Tanh(),
-            nn.LeakyReLU(),
-            # nn.Dropout2d(p=0.1),
+            nn.Conv2d(in_channels=60, out_channels=128, kernel_size=3, padding=1, padding_mode='reflect'),
+            nn.BatchNorm2d(num_features=128),
+            nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
+            nn.ReLU(),
+            nn.Dropout2d(p=0.5),
 
         )
 
+        self.global_pool = nn.AdaptiveAvgPool2d(1)
+
         self.Linear = nn.Sequential(
-            nn.Linear(in_features=320, out_features=56),
-            nn.BatchNorm1d(num_features=56),
+            nn.Linear(in_features=128, out_features=32),
+            nn.BatchNorm1d(num_features=32),
             nn.LeakyReLU(),
             nn.Dropout(p=0.2),
 
-            nn.Linear(in_features=56, out_features=num_classes),
+            nn.Linear(in_features=32, out_features=num_classes),
             nn.BatchNorm1d(num_features=num_classes),
             nn.LogSoftmax(dim=1)
         )
@@ -131,7 +131,7 @@ class FastCNN(nn.Module):
         x = self.normalize(x)
         x = self.CNN(x)
 
-        x = x.view(x.size(0), -1)
+        x = self.global_pool(x).view(x.size(0), -1)
         x = self.Linear(x)
 
         return x

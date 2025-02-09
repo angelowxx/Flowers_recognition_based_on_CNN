@@ -125,7 +125,7 @@ if __name__ == '__main__':
     cmdline_parser = argparse.ArgumentParser('DL WS24/25 Competition')
 
     cmdline_parser.add_argument('-m', '--model',
-                                default='MobileNetLike',
+                                default='FastCNN',
                                 help='Class name of model to train',
                                 type=str)
     cmdline_parser.add_argument('-b', '--batch_size',
