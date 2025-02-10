@@ -55,7 +55,7 @@ resize_to_64x64 = transforms.Compose([
 ])
 
 resize_to_128x128 = transforms.Compose([
-    transforms.Resize((128, 128)),
+    transforms.Resize((64, 64)),
     transforms.ToTensor(),
     transforms.Lambda(lambda x: x + torch.randn_like(x) * 0.03),
 ])
@@ -114,7 +114,7 @@ data_augmentation_pipline = transforms.Compose([
 ])
 
 data_augmentation_pipline_repeated = transforms.Compose([
-    transforms.Resize(size=(128, 128)),
+    transforms.Resize(size=(64, 64)),
     transforms.RandomAffine(degrees=(0, 90), translate=(0.2, 0.2), shear=20, scale=(0.8, 1.2)),  #
     # RepeatImageTransform(),
     transforms.RandomVerticalFlip(p=0.5),
