@@ -87,7 +87,7 @@ def main(data_dir,
 
     info = 'Training'
     score = []
-    train_model(save_model_str, 21, model, model_optimizer, 0.01, ConcatDataset(train_data), test_loader, 7
+    train_model(save_model_str, 14, model, model_optimizer, 0.01, ConcatDataset(train_data), test_loader, 7
                 , batch_size, train_criterion, device, exp_name, score, info)
 
 
