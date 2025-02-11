@@ -39,8 +39,8 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
             model.parameters(),
             lr=lr,
             weight_decay=0.02,
-            # momentum=0.9,
-            # nesterov=True,
+            momentum=0.9,
+            nesterov=True,
         )
 
         scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(

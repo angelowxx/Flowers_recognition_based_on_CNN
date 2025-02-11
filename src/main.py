@@ -87,7 +87,7 @@ def main(data_dir,
 
     info = 'Training'
     score = []
-    train_model(save_model_str, 14, model, model_optimizer, 0.01, ConcatDataset(train_data), test_loader, 7
+    train_model(save_model_str, 21, model, model_optimizer, 0.01, ConcatDataset(train_data), test_loader, 7
                 , batch_size, train_criterion, device, exp_name, score, info)
 
 
@@ -125,7 +125,7 @@ if __name__ == '__main__':
                                 choices=list(loss_dict.keys()),
                                 type=str)
     cmdline_parser.add_argument('-o', '--optimizer',
-                                default='adamW',
+                                default='sgd',
                                 help='Which optimizer to use during training',
                                 choices=list(opti_dict.keys()),
                                 type=str)
