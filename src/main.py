@@ -13,6 +13,7 @@ from src.cnn import *
 from src.eval.evaluate import eval_fn, accuracy
 from src.training import train_fn, train_model
 from src.data_augmentations import *
+from src.ImageHolder import ImageHolder
 
 
 def main(data_dir,
@@ -53,15 +54,15 @@ def main(data_dir,
         data_augmentations = transforms.Compose(data_augmentations)
     elif not isinstance(data_augmentations, transforms.Compose):
         raise NotImplementedError"""
-    # data_augmentations = data_augmentations[0]
+    data_augmentations = data_augmentation_pipline_repeated
     base_transform = resize_to_128x128
 
     # Load the dataset
-    train_data = ImageFolder(os.path.join(data_dir, 'train'), transform=base_transform)
-    val_data = ImageFolder(os.path.join(data_dir, 'val'), transform=base_transform)
-    test_data = ImageFolder(os.path.join(data_dir, 'test'), transform=base_transform)
+    train_data = ImageHolder(os.path.join(data_dir, 'train'), transform=base_transform, iterate=5)
+    val_data = ImageHolder(os.path.join(data_dir, 'val'), transform=base_transform, iterate=5)
+    test_data = ImageHolder(os.path.join(data_dir, 'test'), transform=base_transform, iterate=1)
 
-    channels, img_height, img_width = train_data[0][0].shape
+    channels, img_height, img_width = train_data[0][0][0].shape
 
     # image size
     input_shape = (channels, img_height, img_width)
@@ -77,34 +78,16 @@ def main(data_dir,
     logging.info('Model being trained:')
     summary(model, input_shape,
             device='cuda' if torch.cuda.is_available() else 'cpu')
-    if train_with_all_data:
-        train_data = [train_data, val_data, test_data]
-    else:
-        train_data = [train_data, val_data]
+    train_data = [train_data, val_data]
     test_loader = DataLoader(test_data, batch_size=128, shuffle=False)
 
     if continue_training:
         logging.info('loading model state dict!!')
         model.load_state_dict(torch.load(os.path.join(os.getcwd(), 'models', 'pre-trained_model')))
 
-    data_augmentations = [data_augmentation_pipline_repeated]
-    augmentation_times = [5]
-
-    augmentation_types = len(data_augmentations)
-    for i in range(augmentation_types):
-        data_augmentation = data_augmentations[i]
-        augmentation_time = augmentation_times[i]
-        train_data = [ImageFolder(os.path.join(data_dir, 'train'), transform=data_augmentation) for i in
-                      range(augmentation_time)] + train_data
-        train_data = [ImageFolder(os.path.join(data_dir, 'val'), transform=data_augmentation) for i in
-                      range(augmentation_time)] + train_data
-        if train_with_all_data:
-            train_data = [ImageFolder(os.path.join(data_dir, 'test'), transform=data_augmentation) for i in
-                          range(augmentation_time)] + train_data
-
     info = 'Training'
     score = []
-    train_model(save_model_str, 35, model, model_optimizer, 0.01, ConcatDataset(train_data), test_loader, 5
+    train_model(save_model_str, 21, model, model_optimizer, 0.01, ConcatDataset(train_data), test_loader, 5
                 , batch_size, train_criterion, device, exp_name, score, info)
 
 
@@ -129,7 +112,7 @@ if __name__ == '__main__':
                                 help='Class name of model to train',
                                 type=str)
     cmdline_parser.add_argument('-b', '--batch_size',
-                                default=256,
+                                default=32,
                                 help='Batch size',
                                 type=int)
     cmdline_parser.add_argument('-D', '--data_dir',
