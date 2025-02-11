@@ -95,7 +95,6 @@ def train_model(save_model_str, num_epochs, model, model_optimizer, lr, train_da
 
             else:
                 de_cnt += 1
-                # min_val_loss = val_loss * 0.2 + min_val_loss * 0.8
 
             if de_cnt > 3:
                 logging.info('#' * 19 + 'early stop!!' + '#' * 19)
