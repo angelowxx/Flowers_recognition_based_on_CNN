@@ -115,7 +115,7 @@ data_augmentation_pipline = transforms.Compose([
 
 data_augmentation_pipline_repeated = transforms.Compose([
     transforms.Resize(size=(128, 128)),
-    transforms.RandomAffine(degrees=(0, 90), translate=(0.2, 0.2), shear=20, scale=(0.8, 1.2)),  #
+    transforms.RandomAffine(degrees=(0, 90), translate=(0.3, 0.3), shear=30, scale=(0.7, 1.3)),  #
     # RepeatImageTransform(),
     transforms.RandomVerticalFlip(p=0.5),
     transforms.RandomHorizontalFlip(p=0.5),

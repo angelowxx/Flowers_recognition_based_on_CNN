@@ -58,8 +58,8 @@ def main(data_dir,
     base_transform = resize_to_128x128
 
     # Load the dataset
-    train_data = ImageHolder(os.path.join(data_dir, 'train'), transform=base_transform, iterate=5)
-    val_data = ImageHolder(os.path.join(data_dir, 'val'), transform=base_transform, iterate=5)
+    train_data = ImageHolder(os.path.join(data_dir, 'train'), transform=base_transform, iterate=10)
+    val_data = ImageHolder(os.path.join(data_dir, 'val'), transform=base_transform, iterate=10)
     test_data = ImageHolder(os.path.join(data_dir, 'test'), transform=base_transform, iterate=1)
 
     channels, img_height, img_width = train_data[0][0][0].shape
@@ -87,7 +87,7 @@ def main(data_dir,
 
     info = 'Training'
     score = []
-    train_model(save_model_str, 21, model, model_optimizer, 0.01, ConcatDataset(train_data), test_loader, 5
+    train_model(save_model_str, 21, model, model_optimizer, 0.01, ConcatDataset(train_data), test_loader, 7
                 , batch_size, train_criterion, device, exp_name, score, info)
 
 
