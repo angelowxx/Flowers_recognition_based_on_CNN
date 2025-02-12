@@ -58,9 +58,9 @@ def main(data_dir,
     base_transform = resize_to_128x128
 
     # Load the dataset
-    train_data = ImageHolder(os.path.join(data_dir, 'train'), transform=base_transform, iterate=5)
-    val_data = ImageHolder(os.path.join(data_dir, 'val'), transform=base_transform, iterate=5)
-    test_data = ImageHolder(os.path.join(data_dir, 'test'), transform=base_transform, iterate=1)
+    train_data = ImageFolder(os.path.join(data_dir, 'train'), transform=base_transform)
+    val_data = ImageFolder(os.path.join(data_dir, 'val'), transform=base_transform)
+    test_data = ImageFolder(os.path.join(data_dir, 'test'), transform=base_transform)
 
     channels, img_height, img_width = train_data[0][0][0].shape
 
