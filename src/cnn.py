@@ -98,17 +98,19 @@ class FastCNN(nn.Module):
             nn.BatchNorm2d(num_features=20),
             nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
             nn.ReLU(),
+            nn.Dropout2d(p=0.5),
 
             nn.Conv2d(in_channels=20, out_channels=40, kernel_size=3, padding=1, padding_mode='reflect'),
             nn.BatchNorm2d(num_features=40),
             nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
             nn.ReLU(),
+            nn.Dropout2d(p=0.5),
 
             nn.Conv2d(in_channels=40, out_channels=60, kernel_size=3, padding=1, padding_mode='reflect'),
             nn.BatchNorm2d(num_features=60),
             nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
             nn.ReLU(),
-            nn.Dropout2d(p=0.2),
+            nn.Dropout2d(p=0.5),
 
             nn.Conv2d(in_channels=60, out_channels=110, kernel_size=3, padding=1, padding_mode='reflect'),
             nn.BatchNorm2d(num_features=110),
