@@ -62,7 +62,7 @@ def main(data_dir,
     val_data = ImageFolder(os.path.join(data_dir, 'val'), transform=base_transform)
     test_data = ImageFolder(os.path.join(data_dir, 'test'), transform=base_transform)
 
-    channels, img_height, img_width = train_data[0][0][0].shape
+    channels, img_height, img_width = train_data[0][0].shape
 
     # image size
     input_shape = (channels, img_height, img_width)
@@ -84,6 +84,21 @@ def main(data_dir,
     if continue_training:
         logging.info('loading model state dict!!')
         model.load_state_dict(torch.load(os.path.join(os.getcwd(), 'models', 'pre-trained_model')))
+
+    data_augmentations = [data_augmentation_pipline_repeated]
+    augmentation_times = [5]
+
+    augmentation_types = len(data_augmentations)
+    for i in range(augmentation_types):
+        data_augmentation = data_augmentations[i]
+        augmentation_time = augmentation_times[i]
+        train_data = [ImageFolder(os.path.join(data_dir, 'train'), transform=data_augmentation) for i in
+                      range(augmentation_time)] + train_data
+        train_data = [ImageFolder(os.path.join(data_dir, 'val'), transform=data_augmentation) for i in
+                      range(augmentation_time)] + train_data
+        if train_with_all_data:
+            train_data = [ImageFolder(os.path.join(data_dir, 'test'), transform=data_augmentation) for i in
+                          range(augmentation_time)] + train_data
 
     info = 'Training'
     score = []
@@ -112,7 +127,7 @@ if __name__ == '__main__':
                                 help='Class name of model to train',
                                 type=str)
     cmdline_parser.add_argument('-b', '--batch_size',
-                                default=32,
+                                default=256,
                                 help='Batch size',
                                 type=int)
     cmdline_parser.add_argument('-D', '--data_dir',

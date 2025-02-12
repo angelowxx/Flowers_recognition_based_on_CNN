@@ -139,8 +139,8 @@ def train_fn(model, optimizer, criterion, train_loader, device):
 
     t = tqdm(train_loader)
     for images, labels in t:
-        images = torch.cat(images).to(device)
-        labels = torch.cat(labels).to(device)
+        images = images.to(device)
+        labels = labels.to(device)
 
         optimizer.zero_grad()
         logits = model(images)
@@ -165,8 +165,8 @@ def eval_model(model, criterion, val_loader, device, info):
     t = tqdm(val_loader)
     with torch.no_grad():  # no gradient needed
         for images, labels in t:
-            images = torch.cat(images).to(device)
-            labels = torch.cat(labels).to(device)
+            images = images.to(device)
+            labels = labels.to(device)
 
             outputs = model(images)
             loss = criterion(outputs, labels)
