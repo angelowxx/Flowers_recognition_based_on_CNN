@@ -200,9 +200,7 @@ class DepthwiseSeparableConv(nn.Module):
                                     groups=in_channels, bias=False)
         self.depthwise5 = nn.Conv2d(in_channels, in_channels, kernel_size=3, stride=stride, padding=2,
                                     dilation=2, groups=in_channels, bias=False)
-        self.depthwise7 = nn.Conv2d(in_channels, in_channels, kernel_size=3, stride=stride, padding=3,
-                                    dilation=3, groups=in_channels, bias=False)
-        self.pointwise = nn.Conv2d(in_channels*4, out_channels, kernel_size=1, bias=False)
+        self.pointwise = nn.Conv2d(in_channels*3, out_channels, kernel_size=1, bias=False)
         self.pool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         self.bn = nn.BatchNorm2d(out_channels)
         self.relu = nn.ReLU(inplace=True)
@@ -210,8 +208,7 @@ class DepthwiseSeparableConv(nn.Module):
     def forward(self, x):
         x1 = self.depthwise3(x)
         x2 = self.depthwise5(x)
-        x3 = self.depthwise7(x)
-        x = torch.cat([x, x1, x2, x3], dim=1)
+        x = torch.cat([x, x1, x2], dim=1)
 
         x = self.pointwise(x)
         x = self.bn(x)
@@ -225,22 +222,27 @@ class MobileNetLike(nn.Module):
     def __init__(self, input_shape=(3, 128, 128), num_classes=17):
         super(MobileNetLike, self).__init__()
         self.initial_conv = nn.Sequential(
-            nn.Conv2d(3, 48, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1, bias=False),
             nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
-            nn.BatchNorm2d(48),
+            nn.BatchNorm2d(32),
             nn.ReLU(inplace=True),
         )
 
-        self.conv1 = DepthwiseSeparableConv(48, 64)
-        self.conv2 = DepthwiseSeparableConv(64, 96)
-        self.conv3 = DepthwiseSeparableConv(96, 128)
+        self.conv1 = DepthwiseSeparableConv(32, 64)
+        self.conv2 = DepthwiseSeparableConv(64, 128)
+        self.conv3 = DepthwiseSeparableConv(128, 151)
 
         self.dropout = nn.Dropout2d(0.5)
 
         self.global_pool = nn.AdaptiveAvgPool2d(1)
 
         self.linear = nn.Sequential(
-            nn.Linear(128, num_classes),
+            nn.Linear(151, 32),
+            nn.BatchNorm1d(32),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+
+            nn.Linear(32, num_classes),
             nn.BatchNorm1d(num_classes),
             nn.LogSoftmax(dim=1),
         )
@@ -250,9 +252,8 @@ class MobileNetLike(nn.Module):
 
         x = self.conv1(x)
         x = self.conv2(x)
+        x = self.dropout(x)
         x = self.conv3(x)
-        #x = self.conv4(x)
-        #x = self.conv5(x)
         x = self.dropout(x)
 
         x = self.global_pool(x)
