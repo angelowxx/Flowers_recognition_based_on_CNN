@@ -125,7 +125,7 @@ if __name__ == '__main__':
                                 choices=list(loss_dict.keys()),
                                 type=str)
     cmdline_parser.add_argument('-o', '--optimizer',
-                                default='sgd',
+                                default='adamW',
                                 help='Which optimizer to use during training',
                                 choices=list(opti_dict.keys()),
                                 type=str)
